@@ -20,9 +20,10 @@ public class Main {
                 cod+=linha;
                 cod+='\n';
             }
-            Tokenizador codigo = new Tokenizador(cod);
+            Analisador codigo = new Analisador(cod);
             codigo.CriarTokens();
             codigo.ImprimirTokens();
+            codigo.tabela();
             arq.close();
         } catch (IOException e) {
             System.err.printf("Erro na abertura do arquivo: %s.\n",

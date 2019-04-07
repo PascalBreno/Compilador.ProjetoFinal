@@ -7,7 +7,7 @@ import java.util.List;
 
 public class Tokenizador extends JFrame {
 
-    private String Codigo;
+    public String Codigo;
     private int posicaoAtual = 0;
     private Peex peex = new Peex();
     public List<Token> token = new ArrayList<Token>();
@@ -43,15 +43,36 @@ public class Tokenizador extends JFrame {
                     posicaoAtual++;
                     break;
                 }
+                if(catual ==','){
+                    AnalisarPalavra(peex);
+                    AdicionarToken(",", TipoToken.Virgula);
+                    peex.novoPeex();
+                    posicaoAtual++;
+                    break;
+                }
+                if(catual == ':' && cprox!='='){
+                    AnalisarPalavra(peex);
+                    AdicionarToken(":", TipoToken.doispontos);
+                    peex.novoPeex();
+                    posicaoAtual++;
+                    break;
+                }
                 if (catual == '\n') {
                     AnalisarPalavra(peex);    //Analiza a palavra lida até o simbolo de pular Linha
                     peex.novoPeex();
                     posicaoAtual++;
                     break;
                 }
+                if (catual==';'){
+                    AnalisarPalavra(peex);
+                    AdicionarToken(";",TipoToken.PontoEVirgula);//Analiza a palavra lida até o simbolo de pular Linha
+                    peex.novoPeex();
+                    posicaoAtual++;
+                    break;
+                }
                 if (catual == ':' && cprox == '=') {
                     AnalisarPalavra(peex);
-                    AdicionarToken("==", TipoToken.OperadordeAtribuicao);
+                    AdicionarToken(":=", TipoToken.OperadordeAtribuicao);
                     peex.novoPeex();
                     posicaoAtual = posicaoAtual + 2;
                     break;
@@ -67,11 +88,6 @@ public class Tokenizador extends JFrame {
                 peex.palavra += catual;        //Adiciona ao Peex o ultimo caracter
                 if (catual == ' ')
                     break;
-                if (peex.palavra.equals("int ") || peex.palavra.equals("int")) {
-                    analisarInt(peex, Codigo, catual, cprox);
-                }
-
-                //analisarcodigo(catual, cprox);
                 posicaoAtual++;
             } while (posicaoAtual < ValorMaximo);
             peex.novoPeex();
@@ -88,16 +104,17 @@ public class Tokenizador extends JFrame {
         } else if(peex.palavra.equals("Real")) {
             AdicionarToken(peex.palavra, TipoToken.Real);
 
-        }else if(peex.palavra.equals("Integer")) {
+        }else if(peex.palavra.equals("Integer")|| peex.palavra.equals("integer")) {
             AdicionarToken(peex.palavra, TipoToken.Integer);
         }else if(peex.palavra.equals("var")) {
             AdicionarToken(peex.palavra, TipoToken.Var);
-        }
-            if (posicaoAtual + 1 < Codigo.length()) {
+        }else if(peex.palavra.equals("Real") || peex.palavra.equals("real")) {
+            AdicionarToken("Real", TipoToken.Real);
+        }else{
+            if((posicaoAtual + 1 < Codigo.length()))
                 cprox = Codigo.charAt(posicaoAtual + 1);
-            } else {
-                cprox = Codigo.charAt(posicaoAtual);
-            }
+            cprox = Codigo.charAt(posicaoAtual);
+
             //Aqui irei analisar a palavra que foi inserida antes dos operadores de CHAR
             if (!(peex.palavra.equals("")) && !(peex.palavra.equals(" "))) {
                 if (peex.palavra.equals("int ") || peex.palavra.equals("int")) {
@@ -135,6 +152,7 @@ public class Tokenizador extends JFrame {
                             AdicionarToken(peex.palavra, TipoToken.Identificadores);
                     }
                 }
+            }
             }
         }
 

@@ -19,7 +19,7 @@ public class Analisador extends Tokenizador {
     public void tabela() {
         Z();
         if(!error) {
-            System.out.println("Ta tudo OK!");
+            System.out.println("Passou pela analise!");
             imprimirTabela();
         }
         else
@@ -46,11 +46,15 @@ public class Analisador extends Tokenizador {
     private void imprimirTabela(){
         int tamanho = tabela.size();
         int i =0;
+        System.out.println("Tabela de Simbolos: ");
+        System.out.println("------------------------");
+        System.out.println("Nome\tTipo");
         do{
-            System.out.println(tabela.get(i).cod + " " + tabela.get(i).tipoToken);
+            System.out.println(tabela.get(i).cod + "\t|\t" + tabela.get(i).tipoToken);
             i++;
             tamanho--;
         }while(tamanho>0);
+        System.out.println("------------------------");
     }
 
     public void proxToken() {
@@ -76,8 +80,10 @@ public class Analisador extends Tokenizador {
 
     private void Error(TipoToken a) {
         error = true;
+        System.out.println("Impossível continuar com a analise.");
         System.out.println("Error no token: " + tokenAtual.cod);
         System.out.println("Eu esperava um " + a);
+        System.exit(1);
     }
 
     private void D() {
@@ -120,8 +126,11 @@ public class Analisador extends Tokenizador {
     }
 
     private void ErrorId(String id){
+        System.out.println("Erro na Analise:");
         System.out.println("A variavel "+ id+ " foi declarado mais de uma vez.");
+        System.out.println("O compilador não pode continuar");
         error = true;
+        System.exit(0);
     }
     private boolean VerificarIdTabela(String id){
         int i=0;
@@ -161,14 +170,14 @@ public class Analisador extends Tokenizador {
     }
     private void L(){
         //L → id X
-        if(tokenAtual.tipoToken == TipoToken.Identificadores){
+        if(tokenAtual.tipoToken == TipoToken.Identificador){
             String cod = tokenAtual.cod;
             Id.add(cod);
             ListID++;
             proxToken();
             X();
         }else{
-            Error(TipoToken.Identificadores);
+            Error(TipoToken.Identificador);
         }
     }
 
@@ -191,7 +200,7 @@ public class Analisador extends Tokenizador {
         return false;
     }
     private void S() {
-        if(tokenAtual.tipoToken==TipoToken.Identificadores){
+        if(tokenAtual.tipoToken==TipoToken.Identificador){
             if(VerificarIdentificador()) {
                 addtipotokenList();
                 proxToken();
@@ -276,7 +285,7 @@ public class Analisador extends Tokenizador {
         return null;
     }
     private void T(){
-        if(tokenAtual.tipoToken==TipoToken.Identificadores){
+        if(tokenAtual.tipoToken==TipoToken.Identificador){
             //Fazer função que busca o tipo do identificador
             if(VerificarIdentificador()) {
                 addtipotokenList();
@@ -284,9 +293,11 @@ public class Analisador extends Tokenizador {
             }else{
                 error=true;
                 System.out.println("Variavel "+tokenAtual.cod+ " não foi declarada.");
+                System.exit(1);
             }
         }else{
-            Error(TipoToken.Identificadores);
+            Error(TipoToken.Identificador);
+            System.exit(1);
         }
     }
     private void addtipotokenList(){
@@ -306,5 +317,6 @@ public class Analisador extends Tokenizador {
     private void ErroTipo(String id, String atual, String esperado){
         error = true;
         System.out.println("Erro de Tipo na variavel '"+id+"'. Ela é do tipo "+ atual+ " e esperava um "+esperado+".");
+        System.exit(1);
     }
 }

@@ -12,6 +12,7 @@ public class Tokenizador extends JFrame {
     private Peex peex = new Peex();
     public List<Token> token = new ArrayList<Token>();
     private int ValorMaximo = 0;
+    public boolean Errotokenizador = false;
 
     public Tokenizador(String codigo) {
         this.Codigo = codigo;
@@ -134,7 +135,8 @@ public class Tokenizador extends JFrame {
                         }
                     }
                     if (error) {
-                        AdicionarToken("Error", TipoToken.Error);
+                        AdicionarToken(peex.palavra, TipoToken.Error);
+                        Errotokenizador = true;
                     } else {
                         for (int x = 0; x < peex.palavra.length(); x++) {
                             for (int y = 0; y < 16; y++) {
@@ -146,10 +148,12 @@ public class Tokenizador extends JFrame {
                                 }
                             }
                         }
-                        if (error)
-                            AdicionarToken("Error", TipoToken.Error);
+                        if (error) {
+                            AdicionarToken(peex.palavra, TipoToken.Error);
+                            Errotokenizador = true;
+                        }
                         else
-                            AdicionarToken(peex.palavra, TipoToken.Identificadores);
+                            AdicionarToken(peex.palavra, TipoToken.Identificador);
                     }
                 }
             }
@@ -171,9 +175,11 @@ public class Tokenizador extends JFrame {
     public void ImprimirTokens() {
         String codigo = "";
         for (int i = 0; i < token.size(); i++) {
-            codigo += "\n\t" + token.get(i).tipoToken + "----> " + token.get(i).cod + "\n";
+            codigo +=token.get(i).tipoToken + "\t----> " + token.get(i).cod + "\n";
         }
         System.out.println(codigo);
+        System.out.println("==========Fim da analise de Tokens==========\n");
+        System.out.println("Inicio da Analise Descendente:\n");
     }
 
     public void analisarInt(Peex peex, String codigo, char catual, char cprox) {

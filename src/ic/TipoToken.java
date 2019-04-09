@@ -1,7 +1,7 @@
 package ic;
 
 public enum TipoToken {
-    Identificadores(""),
+    Identificador(""),
     Then("Then"),
     PalavraReservadaIF("If"),
     OperadordeAtribuicao(":="),

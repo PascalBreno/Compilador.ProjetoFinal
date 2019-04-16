@@ -2,21 +2,20 @@ package ic;
 
 import java.util.ArrayList;
 import java.util.List;
+class Analisador extends Tokenizador {
 
-public class Analisador extends Tokenizador {
-
-    public Analisador(String codigo) {
+    Analisador(String codigo) {
         super(codigo);
     }
-    String tokenAnterior = " ";
-    int valorTokenAtual = -1;
-    Token tokenAtual;
-    Boolean error=false;
-    public List<Token> tipotokenListId = new ArrayList<Token>();
-    public List<Tabela> tabela = new ArrayList<Tabela>();
-    int ListID =0;
-    public List<String> Id = new ArrayList<String>();
-    public void tabela() {
+    private int valorTokenAtual = -1;
+    private Token tokenAtual;
+    private Boolean error=false;
+    private List<Token> tipotokenListId = new ArrayList<>();
+    private List<Tabela> tabela = new ArrayList<>();
+    private int ListID =0;
+    private List<Token> Id = new ArrayList<>();
+    void tabela() {
+        System.out.println("Inicio da Analise Descendente:\n");
         Z();
         if(!error) {
             System.out.println("Passou pela analise!");
@@ -24,40 +23,23 @@ public class Analisador extends Tokenizador {
         }
         else
             System.out.println("Esta Errado");
-        /*
-        Z → I S
-    I → var D
-     D → L : K O
-    L → id X
-    X → , L
-    X → ε
-    K → integer
-    K → real
-    O → ; D
-    O →ε
-    S → id := E
-    S → if E then S
-    E → T R
-    R → + T R
-    R → ε
-    T → id
-         */
     }
     private void imprimirTabela(){
         int tamanho = tabela.size();
         int i =0;
         System.out.println("Tabela de Simbolos: ");
         System.out.println("------------------------");
-        System.out.println("Nome\tTipo");
+        System.out.println("Nome\t\tTipo\t\t\tTipo Token");
         do{
-            System.out.println(tabela.get(i).cod + "\t|\t" + tabela.get(i).tipoToken);
+            System.out.println(tabela.get(i).token.cod + "\t\t|\t" + tabela.get(i).token.tipoToken
+                    + "\t|\t" + tabela.get(i).tipoToken);
             i++;
             tamanho--;
         }while(tamanho>0);
         System.out.println("------------------------");
     }
 
-    public void proxToken() {
+    private void proxToken() {
         valorTokenAtual++;
         if(valorTokenAtual<token.size())
         tokenAtual = token.get(valorTokenAtual);
@@ -70,11 +52,11 @@ public class Analisador extends Tokenizador {
     }
 
     private void I() {
-        if (tokenAtual.tipoToken == TipoToken.Var) {
+        if (tokenAtual.tipoToken == TipoToken.var) {
             proxToken();
             D();
         } else {
-            Error(TipoToken.Var);
+            Error(TipoToken.var);
         }
     }
 
@@ -99,10 +81,6 @@ public class Analisador extends Tokenizador {
     }
 
     private void O(){
-        /*
-        O → ; D
-        O →ε
-         */
         if(tokenAtual.tipoToken==TipoToken.PontoEVirgula){
             proxToken();
             D();
@@ -118,11 +96,11 @@ public class Analisador extends Tokenizador {
                 i++;
                 tabela.add(newtabela);
             }else{
-                ErrorId(Id.get(i));
+                ErrorId(Id.get(i).cod);
             }
         ListID--;
         }while(ListID>0);
-        limparidentificadores();
+        LimparIdentificadores();
     }
 
     private void ErrorId(String id){
@@ -132,25 +110,23 @@ public class Analisador extends Tokenizador {
         error = true;
         System.exit(0);
     }
-    private boolean VerificarIdTabela(String id){
+    private boolean VerificarIdTabela(Token id){
         int i=0;
         int tam = tabela.size();
         if(tabela.size()==0)
             return true;
         do{
-            if(tabela.get(i).cod.equals(id))
+            if(tabela.get(i).token.cod.equals(id.cod))
                 return false;
             i++;
             tam--;
         }while(tam>0);
         return true;
     }
-    private void limparidentificadores(){
+    private void LimparIdentificadores(){
         int tamanho = Id.size();
-        int i=0;
         do{
             Id.remove(tamanho-1);
-            i++;
             tamanho--;
         }while(tamanho>0);
     }
@@ -159,10 +135,10 @@ public class Analisador extends Tokenizador {
          K → integer
          K → real
          */
-        if(tokenAtual.tipoToken==TipoToken.Integer){
-            adicionarIdentificadores(TipoToken.Integer);
-        }else if (tokenAtual.tipoToken==TipoToken.Real){
-            adicionarIdentificadores(TipoToken.Real);
+        if(tokenAtual.tipoToken==TipoToken.integer){
+            adicionarIdentificadores(TipoToken.integer);
+        }else if (tokenAtual.tipoToken==TipoToken.real){
+            adicionarIdentificadores(TipoToken.real);
         }else{
             Error(TipoToken.TipodeVariavel);
         }
@@ -171,8 +147,7 @@ public class Analisador extends Tokenizador {
     private void L(){
         //L → id X
         if(tokenAtual.tipoToken == TipoToken.Identificador){
-            String cod = tokenAtual.cod;
-            Id.add(cod);
+            Id.add(tokenAtual);
             ListID++;
             proxToken();
             X();
@@ -193,7 +168,7 @@ public class Analisador extends Tokenizador {
     private boolean VerificarIdentificador(){
         int tam = tabela.size()-1;
         do{
-            if(tokenAtual.cod.equals(tabela.get(tam).cod))
+            if(tokenAtual.cod.equals(tabela.get(tam).token.cod))
                 return true;
             tam--;
         }while(tam>-1);
@@ -250,14 +225,14 @@ public class Analisador extends Tokenizador {
     private boolean VerificarosTipos(){
         int tam = tipotokenListId.size()-1;
         String first = tipotokenListId.get(0).tipoToken.toString();
-        boolean retorno = true;
         do{
             if(!first.equals(tipotokenListId.get(tam).tipoToken.toString())) {
                 return false;
             }
             tam--;
         }while(tam>-1);
-        return retorno;
+
+        return true;
     }
 
 
@@ -278,7 +253,7 @@ public class Analisador extends Tokenizador {
     private TipoToken buscartipodevarTab(String id){
         int tam = tabela.size()-1;
         do{
-            if(tabela.get(tam).cod.equals(id))
+            if(tabela.get(tam).token.cod.equals(id))
                 return tabela.get(tam).tipoToken;
             tam--;
         }while(tam>-1);
@@ -310,8 +285,6 @@ public class Analisador extends Tokenizador {
             proxToken();
             T();
             R();
-        }else{
-
         }
     }
     private void ErroTipo(String id, String atual, String esperado){

@@ -1,8 +1,8 @@
 package ic;
 
-public class Peex {
+class Peex {
     String palavra = "";
-    public void novoPeex(){
+    void novoPeex(){
         this.palavra = "";
     }
 }

@@ -5,33 +5,28 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class Tokenizador extends JFrame {
+class Tokenizador extends JFrame {
 
-    public String Codigo;
+    private String Codigo;
     private int posicaoAtual = 0;
     private Peex peex = new Peex();
-    public List<Token> token = new ArrayList<Token>();
-    private int ValorMaximo = 0;
-    public boolean Errotokenizador = false;
+    List<Token> token = new ArrayList<>();
+    boolean Errotokenizador = false;
 
-    public Tokenizador(String codigo) {
+    Tokenizador(String codigo) {
         this.Codigo = codigo;
     }  // Iniciar o Tokenizador aderindo o código lido.
 
-    public void CriarTokens() {
-        char catual, cprox = ' ', canterior;
+    void CriarTokens() {
+        char catual, cprox;
         peex.novoPeex();
-        this.ValorMaximo = Codigo.length() - 1;
-        while (posicaoAtual < ValorMaximo) {
+        int valorMaximo = Codigo.length() - 1;
+        while (posicaoAtual < valorMaximo) {
             retirarEspaco(Codigo);
             do {
                 // Recebe o char atual e o seguinte.
                 catual = Codigo.charAt(posicaoAtual);
-                if (posicaoAtual == 0)
-                    canterior = Codigo.charAt(posicaoAtual);
-                else
-                    canterior = Codigo.charAt(posicaoAtual - 1);
-                if (posicaoAtual + 1 < ValorMaximo)                  //Aqui estou verificando se o próximo valor é maior que o tamanho da String
+                if (posicaoAtual + 1 < valorMaximo)                  //Aqui estou verificando se o próximo valor é maior que o tamanho da String
                     cprox = Codigo.charAt(posicaoAtual + 1);          // Isso evita erro de pegar um valor que não tem na string
                 else
                     cprox = Codigo.charAt(posicaoAtual);
@@ -44,14 +39,14 @@ public class Tokenizador extends JFrame {
                     posicaoAtual++;
                     break;
                 }
-                if(catual ==','){
+                if (catual == ',') {
                     AnalisarPalavra(peex);
                     AdicionarToken(",", TipoToken.Virgula);
                     peex.novoPeex();
                     posicaoAtual++;
                     break;
                 }
-                if(catual == ':' && cprox!='='){
+                if (catual == ':' && cprox != '=') {
                     AnalisarPalavra(peex);
                     AdicionarToken(":", TipoToken.doispontos);
                     peex.novoPeex();
@@ -64,14 +59,14 @@ public class Tokenizador extends JFrame {
                     posicaoAtual++;
                     break;
                 }
-                if (catual==';'){
+                if (catual == ';') {
                     AnalisarPalavra(peex);
-                    AdicionarToken(";",TipoToken.PontoEVirgula);//Analiza a palavra lida até o simbolo de pular Linha
+                    AdicionarToken(";", TipoToken.PontoEVirgula);//Analiza a palavra lida até o simbolo de pular Linha
                     peex.novoPeex();
                     posicaoAtual++;
                     break;
                 }
-                if (catual == ':' && cprox == '=') {
+                if ((catual == ':') && (cprox == '=')) {
                     AnalisarPalavra(peex);
                     AdicionarToken(":=", TipoToken.OperadordeAtribuicao);
                     peex.novoPeex();
@@ -87,39 +82,28 @@ public class Tokenizador extends JFrame {
                     break;
                 }
                 peex.palavra += catual;        //Adiciona ao Peex o ultimo caracter
-                if (catual == ' ')
-                    break;
                 posicaoAtual++;
-            } while (posicaoAtual < ValorMaximo);
+            } while (posicaoAtual < valorMaximo);
             peex.novoPeex();
         }
     }
 
-    public void AnalisarPalavra(Peex peex) {
-        char catual = Codigo.charAt(posicaoAtual);
-        char cprox = ' ';
-        if (peex.palavra.equals("then")){
+    private void AnalisarPalavra(Peex peex) {
+        if (peex.palavra.equals("then")) {
             AdicionarToken(peex.palavra, TipoToken.Then);
-        }else if (peex.palavra.equals("if")) {
+        } else if (peex.palavra.equals("if")) {
             analisarIF(peex);
-        } else if(peex.palavra.equals("Real")) {
-            AdicionarToken(peex.palavra, TipoToken.Real);
-
-        }else if(peex.palavra.equals("Integer")|| peex.palavra.equals("integer")) {
-            AdicionarToken(peex.palavra, TipoToken.Integer);
-        }else if(peex.palavra.equals("var")) {
-            AdicionarToken(peex.palavra, TipoToken.Var);
-        }else if(peex.palavra.equals("Real") || peex.palavra.equals("real")) {
-            AdicionarToken("Real", TipoToken.Real);
-        }else{
-            if((posicaoAtual + 1 < Codigo.length()))
-                cprox = Codigo.charAt(posicaoAtual + 1);
-            cprox = Codigo.charAt(posicaoAtual);
-
+        } else if (peex.palavra.equals(TipoToken.real.toString())) {
+            AdicionarToken(peex.palavra, TipoToken.real);
+        } else if (peex.palavra.equals(TipoToken.integer.toString())) {
+            AdicionarToken(peex.palavra, TipoToken.integer);
+        } else if (peex.palavra.equals(TipoToken.var.toString())) {
+            AdicionarToken(peex.palavra, TipoToken.var);
+        } else {
             //Aqui irei analisar a palavra que foi inserida antes dos operadores de CHAR
             if (!(peex.palavra.equals("")) && !(peex.palavra.equals(" "))) {
                 if (peex.palavra.equals("int ") || peex.palavra.equals("int")) {
-                    analisarInt(peex, Codigo, catual, cprox);
+                    analisarInt(peex);
                 }
                 if (!(peex.palavra.equals(" ")) && !(peex.palavra.equals("\n"))) {
 
@@ -151,46 +135,43 @@ public class Tokenizador extends JFrame {
                         if (error) {
                             AdicionarToken(peex.palavra, TipoToken.Error);
                             Errotokenizador = true;
-                        }
-                        else
+                        } else
                             AdicionarToken(peex.palavra, TipoToken.Identificador);
                     }
                 }
             }
-            }
         }
+    }
 
-    public void AdicionarToken(String string_Token, TipoToken tipoToken) {
+    private void AdicionarToken(String string_Token, TipoToken tipoToken) {
         Token newtoken;
         newtoken = new Token(string_Token, tipoToken);
         token.add(newtoken);
     }
 
-    public void analisarIF(Peex peex) {
+    private void analisarIF(Peex peex) {
         Token palavrareservadaIF;
         palavrareservadaIF = new Token(peex.palavra, TipoToken.PalavraReservadaIF);
         token.add(palavrareservadaIF);
     }
 
-    public void ImprimirTokens() {
-        String codigo = "";
-        for (int i = 0; i < token.size(); i++) {
-            codigo +=token.get(i).tipoToken + "\t----> " + token.get(i).cod + "\n";
+    void ImprimirTokens() {
+        StringBuilder codigo = new StringBuilder();
+        for (Token token1 : token) {
+            codigo.append(token1.tipoToken).append("\t----> ").append(token1.cod).append("\n");
         }
         System.out.println(codigo);
         System.out.println("==========Fim da analise de Tokens==========\n");
-        System.out.println("Inicio da Analise Descendente:\n");
     }
 
-    public void analisarInt(Peex peex, String codigo, char catual, char cprox) {
+    private void analisarInt(Peex peex) {
         Token integer;
-        integer = new Token(peex.palavra, TipoToken.Integer);
+        integer = new Token(peex.palavra, TipoToken.integer);
         token.add(integer);
         peex.novoPeex();
-        //Adicionando o token de comentário na lista
     }
 
-    public void retirarEspaco(String codigo) {
+    private void retirarEspaco(String codigo) {
         char catual = codigo.charAt(this.posicaoAtual);
         if (catual == ' ') {
             do {

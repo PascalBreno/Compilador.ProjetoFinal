@@ -1,10 +1,10 @@
 package ic;
 
-public class Tabela {
-    String cod="";
+class Tabela {
+    Token token;
     TipoToken tipoToken ;
-    public Tabela(String cod, TipoToken tipoToken) {
-        this.cod = cod;
+    Tabela(Token cod, TipoToken tipoToken) {
+        this.token = cod;
         this.tipoToken = tipoToken;
     }
 

@@ -6,16 +6,15 @@ public enum TipoToken {
     PalavraReservadaIF("If"),
     OperadordeAtribuicao(":="),
     OperadorAritmeticoMais("+"),
-    Var("Var"),
+    var("var"),
     Virgula(","),
     doispontos(":"),
     PontoEVirgula(";"),
-    Integer("Integer"),
-    Real("Real"),
+    integer("integer"),
+    real("real"),
     Error(""),
     TipodeVariavel("Tipo de Variavel (Real ou Integer)"),
-    IdentificadorOuPalavraReservada("Esperava um IF ou Um identificador"),
-    Final("$");
+    IdentificadorOuPalavraReservada("Esperava um IF ou Um identificador");
 
     //  {var, : , id, , , integer, real, ; , :=, if, then,+}
 

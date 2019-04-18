@@ -1,4 +1,4 @@
 var
  a, b, c: integer;
  x,l: real
-if a+a then if a+b then a:=a+a
+if a+a then if a+b then a:=a+c+a

@@ -1,6 +1,7 @@
 package ic;
 
 public enum TipoToken {
+    //token
     Identificador(""),
     Then("Then"),
     PalavraReservadaIF("If"),
@@ -11,8 +12,19 @@ public enum TipoToken {
     doispontos(":"),
     PontoEVirgula(";"),
     integer("integer"),
+    abreParenteces("("),
+    fechaParenteses(")"),
+    diferente("<>"),
+    menorIgual(">="),
     real("real"),
     Error(""),
+    fimDeBloco("$"),
+    inicioDo("do"),
+    inicioWhile("While"),
+    inicioWrite("write"),
+    tokenReada("read"),
+    tokenElse("else"),
+    // Erros
     TipodeVariavel("Tipo de Variavel (Real ou Integer)"),
     IdentificadorOuPalavraReservada("Esperava um IF ou Um identificador");
 

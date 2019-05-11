@@ -355,7 +355,7 @@ class Analisador extends Tokenizador {
 
     private void addtipotokenList() {
         Token newtoken;
-        newtoken = new Token(tokenAtual.cod, buscartipodevarTab(tokenAtual.cod));
+        newtoken = new Token(tokenAtual.cod, buscartipodevarTab(tokenAtual.cod), this.linha);
         tipotokenListId.add(newtoken);
     }
 

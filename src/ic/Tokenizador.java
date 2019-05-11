@@ -12,7 +12,7 @@ class Tokenizador extends JFrame {
     private Peex peex = new Peex();
     List<Token> token = new ArrayList<>();
     boolean Errotokenizador = false;
-
+    Integer linha =0;
     Tokenizador(String codigo) {
         this.Codigo = codigo;
     }  // Iniciar o Tokenizador aderindo o código lido.
@@ -32,7 +32,7 @@ class Tokenizador extends JFrame {
                     cprox = Codigo.charAt(posicaoAtual);
 
                 //  {var, : , id, , , integer, real, ; , :=, if, then,+}
-
+                //#sessao
                 if (catual == ' ') {
                     AnalisarPalavra(peex);
                     peex.novoPeex();
@@ -57,6 +57,7 @@ class Tokenizador extends JFrame {
                     AnalisarPalavra(peex);    //Analiza a palavra lida até o simbolo de pular Linha
                     peex.novoPeex();
                     posicaoAtual++;
+                    linha++;
                     break;
                 }
                 if (catual == ';') {
@@ -73,7 +74,6 @@ class Tokenizador extends JFrame {
                     posicaoAtual = posicaoAtual + 2;
                     break;
                 }
-
                 if (catual == '+') {
                     AnalisarPalavra(peex);
                     AdicionarToken("+", TipoToken.OperadorAritmeticoMais);
@@ -145,20 +145,21 @@ class Tokenizador extends JFrame {
 
     private void AdicionarToken(String string_Token, TipoToken tipoToken) {
         Token newtoken;
-        newtoken = new Token(string_Token, tipoToken);
+        newtoken = new Token(string_Token, tipoToken,this.linha);
         token.add(newtoken);
     }
 
     private void analisarIF(Peex peex) {
         Token palavrareservadaIF;
-        palavrareservadaIF = new Token(peex.palavra, TipoToken.PalavraReservadaIF);
+        palavrareservadaIF = new Token(peex.palavra, TipoToken.PalavraReservadaIF,this.linha);
         token.add(palavrareservadaIF);
     }
 
     void ImprimirTokens() {
         StringBuilder codigo = new StringBuilder();
         for (Token token1 : token) {
-            codigo.append(token1.tipoToken).append("\t----> ").append(token1.cod).append("\n");
+            codigo.append(token1.tipoToken).append("\t----> ").append(token1.cod)
+                    .append("\t Na linha : "+ (token1.linha+1)).append("\n");
         }
         System.out.println(codigo);
         System.out.println("==========Fim da analise de Tokens==========\n");
@@ -166,7 +167,7 @@ class Tokenizador extends JFrame {
 
     private void analisarInt(Peex peex) {
         Token integer;
-        integer = new Token(peex.palavra, TipoToken.integer);
+        integer = new Token(peex.palavra, TipoToken.integer,this.linha);
         token.add(integer);
         peex.novoPeex();
     }

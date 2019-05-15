@@ -15,6 +15,8 @@ public enum TipoToken {
     abreParenteces("("),
     fechaParenteses(")"),
     diferente("<>"),
+    menor("<"),
+    maior(">"),
     menorIgual(">="),
     real("real"),
     Error(""),

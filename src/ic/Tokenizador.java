@@ -39,6 +39,17 @@ class Tokenizador extends JFrame {
                     posicaoAtual++;
                     break;
                 }
+                if (catual=='<'){
+                    if(cprox=='>'){
+                        AnalisarPalavra(peex);
+                        AdicionarToken("<>", TipoToken.diferente);//Analiza a palavra lida até o simbolo de pular Linha
+                        peex.novoPeex();
+                        posicaoAtual=posicaoAtual+2;
+                        break;
+                    }else{
+
+                    }
+                }
                 if (catual == ',') {
                     AnalisarPalavra(peex);
                     AdicionarToken(",", TipoToken.Virgula);
@@ -67,12 +78,34 @@ class Tokenizador extends JFrame {
                     posicaoAtual++;
                     break;
                 }
-                if ((catual == ':') && (cprox == '=')) {
+                if (catual=='('){
                     AnalisarPalavra(peex);
-                    AdicionarToken(":=", TipoToken.OperadordeAtribuicao);
+                    AdicionarToken("(", TipoToken.abreParenteces);//Analiza a palavra lida até o simbolo de pular Linha
                     peex.novoPeex();
-                    posicaoAtual = posicaoAtual + 2;
+                    posicaoAtual++;
                     break;
+                }
+                if (catual==')'){
+                    AnalisarPalavra(peex);
+                    AdicionarToken(")", TipoToken.fechaParenteses);//Analiza a palavra lida até o simbolo de pular Linha
+                    peex.novoPeex();
+                    posicaoAtual++;
+                    break;
+                }
+
+                if (catual == ':') {
+                    if(cprox == '=') {
+                        AnalisarPalavra(peex);
+                        AdicionarToken(":=", TipoToken.OperadordeAtribuicao);
+                        peex.novoPeex();
+                        posicaoAtual = posicaoAtual + 2;
+                        break;
+                    }else{
+                        AnalisarPalavra(peex);
+                        AdicionarToken(":", TipoToken.doispontos);
+                        peex.novoPeex();
+                        posicaoAtual = posicaoAtual + 1;
+                    }
                 }
                 if (catual == '+') {
                     AnalisarPalavra(peex);
@@ -93,11 +126,14 @@ class Tokenizador extends JFrame {
             AdicionarToken(peex.palavra, TipoToken.Then);
         } else if (peex.palavra.equals("if")) {
             analisarIF(peex);
-        } else if (peex.palavra.equals(TipoToken.real.toString())) {
+        }
+        else if (peex.palavra.equals(TipoToken.real.toString())) {
             AdicionarToken(peex.palavra, TipoToken.real);
-        } else if (peex.palavra.equals(TipoToken.integer.toString())) {
+        }
+        else if (peex.palavra.equals(TipoToken.integer.toString())) {
             AdicionarToken(peex.palavra, TipoToken.integer);
-        } else if (peex.palavra.equals(TipoToken.var.toString())) {
+        }
+        else if (peex.palavra.equals(TipoToken.var.toString())) {
             AdicionarToken(peex.palavra, TipoToken.var);
         } else {
             //Aqui irei analisar a palavra que foi inserida antes dos operadores de CHAR

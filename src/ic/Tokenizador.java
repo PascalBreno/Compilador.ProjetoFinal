@@ -39,7 +39,14 @@ class Tokenizador extends JFrame {
                     posicaoAtual++;
                     break;
                 }
-                if (catual=='<'){
+                else if (catual=='*'){
+                        AnalisarPalavra(peex);
+                        AdicionarToken("*", TipoToken.multiplicacao);
+                        peex.novoPeex();
+                        posicaoAtual++;
+                        break;
+                }
+                else if (catual=='<'){
                     if(cprox=='>'){
                         AnalisarPalavra(peex);
                         AdicionarToken("<>", TipoToken.diferente);//Analiza a palavra lida até o simbolo de pular Linha
@@ -47,53 +54,91 @@ class Tokenizador extends JFrame {
                         posicaoAtual=posicaoAtual+2;
                         break;
                     }else{
-
+                        AnalisarPalavra(peex);
+                        AdicionarToken("<", TipoToken.menor);
+                        peex.novoPeex();
+                        posicaoAtual++;
+                        break;
                     }
                 }
-                if (catual == ',') {
+                else if(catual =='$'){
+                    AnalisarPalavra(peex);
+                    AdicionarToken("$", TipoToken.fimDeBloco);
+                    peex.novoPeex();
+                    posicaoAtual++;
+                    break;
+                }
+                else if (catual=='>'){
+                    if(cprox=='='){
+                        AnalisarPalavra(peex);
+                        AdicionarToken(">=", TipoToken.menorIgual);//Analiza a palavra lida até o simbolo de pular Linha
+                        peex.novoPeex();
+                        posicaoAtual=posicaoAtual+2;
+                        break;
+                    }else{
+                        AnalisarPalavra(peex);
+                        AdicionarToken(">", TipoToken.maior);
+                        peex.novoPeex();
+                        posicaoAtual++;
+                        break;
+                    }
+                }
+                else if (catual == ',') {
                     AnalisarPalavra(peex);
                     AdicionarToken(",", TipoToken.Virgula);
                     peex.novoPeex();
                     posicaoAtual++;
                     break;
+                } else if (catual == '{') {
+                   analisarcomentario2();
                 }
-                if (catual == ':' && cprox != '=') {
-                    AnalisarPalavra(peex);
-                    AdicionarToken(":", TipoToken.doispontos);
-                    peex.novoPeex();
-                    posicaoAtual++;
-                    break;
-                }
-                if (catual == '\n') {
+                else if (catual == '\n') {
                     AnalisarPalavra(peex);    //Analiza a palavra lida até o simbolo de pular Linha
                     peex.novoPeex();
                     posicaoAtual++;
                     linha++;
                     break;
                 }
-                if (catual == ';') {
+                else if (catual =='-'){
+                    AnalisarPalavra(peex);
+                    AdicionarToken("-", TipoToken.subtracao);
+                    peex.novoPeex();
+                    posicaoAtual++;
+                    break;
+                }
+                else if (catual=='/'){
+                    if(cprox=='*'){
+                        analisarcomentario();
+                    }else{
+                        AnalisarPalavra(peex);
+                        AdicionarToken("/", TipoToken.divisao);
+                        peex.novoPeex();
+                        posicaoAtual++;
+                        break;
+                    }
+                }
+                else if (catual == ';') {
                     AnalisarPalavra(peex);
                     AdicionarToken(";", TipoToken.PontoEVirgula);//Analiza a palavra lida até o simbolo de pular Linha
                     peex.novoPeex();
                     posicaoAtual++;
                     break;
                 }
-                if (catual=='('){
+                else if (catual=='('){
                     AnalisarPalavra(peex);
                     AdicionarToken("(", TipoToken.abreParenteces);//Analiza a palavra lida até o simbolo de pular Linha
                     peex.novoPeex();
                     posicaoAtual++;
                     break;
                 }
-                if (catual==')'){
+               else if (catual==')'){
                     AnalisarPalavra(peex);
                     AdicionarToken(")", TipoToken.fechaParenteses);//Analiza a palavra lida até o simbolo de pular Linha
                     peex.novoPeex();
                     posicaoAtual++;
                     break;
                 }
-
-                if (catual == ':') {
+                else if (catual == ':') {
                     if(cprox == '=') {
                         AnalisarPalavra(peex);
                         AdicionarToken(":=", TipoToken.OperadordeAtribuicao);
@@ -107,18 +152,38 @@ class Tokenizador extends JFrame {
                         posicaoAtual = posicaoAtual + 1;
                     }
                 }
-                if (catual == '+') {
+               else if (catual == '+') {
                     AnalisarPalavra(peex);
                     AdicionarToken("+", TipoToken.OperadorAritmeticoMais);
                     peex.novoPeex();
                     posicaoAtual++;
                     break;
+                } else {
+                    peex.palavra += catual;        //Adiciona ao Peex o ultimo caracter
+                    posicaoAtual++;
                 }
-                peex.palavra += catual;        //Adiciona ao Peex o ultimo caracter
-                posicaoAtual++;
             } while (posicaoAtual < valorMaximo);
             peex.novoPeex();
         }
+    }
+
+    private void analisarcomentario2() {
+        char catual =' ';
+        do{
+            catual = Codigo.charAt(this.posicaoAtual);
+            this.posicaoAtual++;
+        }while(catual!='}');
+    }
+
+    private void analisarcomentario() {
+        char catual =' ';
+        char cprox =' ';
+        do{
+            catual = Codigo.charAt(this.posicaoAtual);
+            cprox = Codigo.charAt(this.posicaoAtual+1);
+            this.posicaoAtual++;
+        }while(catual!='*' || cprox !='/');
+        this.posicaoAtual++;
     }
 
     private void AnalisarPalavra(Peex peex) {
@@ -126,57 +191,82 @@ class Tokenizador extends JFrame {
             AdicionarToken(peex.palavra, TipoToken.Then);
         } else if (peex.palavra.equals("if")) {
             analisarIF(peex);
-        }
-        else if (peex.palavra.equals(TipoToken.real.toString())) {
+        } else if (peex.palavra.equals(TipoToken.real.toString())) {
             AdicionarToken(peex.palavra, TipoToken.real);
-        }
-        else if (peex.palavra.equals(TipoToken.integer.toString())) {
+        } else if (peex.palavra.equals(TipoToken.integer.toString())) {
             AdicionarToken(peex.palavra, TipoToken.integer);
-        }
-        else if (peex.palavra.equals(TipoToken.var.toString())) {
+        } else if (peex.palavra.equals(TipoToken.var.toString())) {
             AdicionarToken(peex.palavra, TipoToken.var);
+        } else if (peex.palavra.equals("do")) {
+            AdicionarToken(peex.palavra, TipoToken.inicioDo);
+        } else if (peex.palavra.equals("while")) {
+            AdicionarToken(peex.palavra, TipoToken.inicioWhile);
+        } else if (peex.palavra.equals("write")) {
+            AdicionarToken(peex.palavra, TipoToken.inicioWrite);
+        } else if (peex.palavra.equals("read")) {
+            AdicionarToken(peex.palavra, TipoToken.tokenReada);
+        } else if (peex.palavra.equals("else")) {
+            AdicionarToken(peex.palavra, TipoToken.tokenElse);
+        } else if (peex.palavra.equals(TipoToken.begin.toString())) {
+            AdicionarToken(peex.palavra, TipoToken.begin);
+        } else if (peex.palavra.equals(TipoToken.end.toString())) {
+            AdicionarToken(peex.palavra, TipoToken.end);
         } else {
             //Aqui irei analisar a palavra que foi inserida antes dos operadores de CHAR
-            if (!(peex.palavra.equals("")) && !(peex.palavra.equals(" "))) {
-                if (peex.palavra.equals("int ") || peex.palavra.equals("int")) {
-                    analisarInt(peex);
+            if (!(peex.palavra.equals("")) && !(peex.palavra.equals(" ") ) && !(peex.palavra.equals("\n"))) {
+                if (!analisarnumero(peex.palavra)){
+                String alfabetoError = "0123456789!@#$%&;,./[]^~:|";
+                String simbolosError = "!@#$%&;,./[]^~:|";
+                boolean error = true;
+                for (int i = 0; i < 26; i++) {
+                    if (peex.palavra.charAt(0) == alfabetoError.charAt(i)) {
+                        error = true;
+                        break;
+                    } else {
+                        error = false;
+                    }
                 }
-                if (!(peex.palavra.equals(" ")) && !(peex.palavra.equals("\n"))) {
-
-                    String alfabetoError = "0123456789!@#$%&;,./[]^~:|";
-                    String simbolosError = "!@#$%&;,./[]^~:|";
-                    boolean error = true;
-                    for (int i = 0; i < 26; i++) {
-                        if (peex.palavra.charAt(0) == alfabetoError.charAt(i)) {
-                            error = true;
-                            break;
-                        } else {
-                            error = false;
+                if (error) {
+                    AdicionarToken(peex.palavra, TipoToken.Error);
+                    Errotokenizador = true;
+                } else {
+                    for (int x = 0; x < peex.palavra.length(); x++) {
+                        for (int y = 0; y < 16; y++) {
+                            if (peex.palavra.charAt(x) == simbolosError.charAt(y)) {
+                                error = true;
+                                break;
+                            } else {
+                                error = false;
+                            }
                         }
                     }
                     if (error) {
                         AdicionarToken(peex.palavra, TipoToken.Error);
                         Errotokenizador = true;
-                    } else {
-                        for (int x = 0; x < peex.palavra.length(); x++) {
-                            for (int y = 0; y < 16; y++) {
-                                if (peex.palavra.charAt(x) == simbolosError.charAt(y)) {
-                                    error = true;
-                                    break;
-                                } else {
-                                    error = false;
-                                }
-                            }
-                        }
-                        if (error) {
-                            AdicionarToken(peex.palavra, TipoToken.Error);
-                            Errotokenizador = true;
-                        } else
-                            AdicionarToken(peex.palavra, TipoToken.Identificador);
-                    }
+                    } else
+                        AdicionarToken(peex.palavra, TipoToken.Identificador);
+                }
+            }}
+        }
+    }
+
+    private boolean analisarnumero(String numero) {
+        String numeroInt = "0123456789";
+        String numeroDouble= ".0123456789";
+        boolean result = false;
+        for(int i=0; i<numero.length();i++){
+            for (int j=0; j<10;j++) {
+                if (numero.charAt(i) == numeroInt.charAt(j)) {
+                    result = true;
+                    AdicionarToken(peex.palavra, TipoToken.numeroInt);
+                    break;
+                }else{
+                    result = false;
                 }
             }
         }
+
+        return result;
     }
 
     private void AdicionarToken(String string_Token, TipoToken tipoToken) {

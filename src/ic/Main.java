@@ -23,20 +23,11 @@ public class Main {
             }
             Analisador codigo = new Analisador(cod);
             codigo.CriarTokens();
-            String escolha;
             if (codigo.Errotokenizador) {
                 codigo.ImprimirTokens();
                 System.out.println("Erro no tokenizador. Impossivel fazer a analise.");
             } else {
-                System.out.println("Analise dos Tokens finalizados com sucesso. Deseja ver os tokens?");
-                do {
-                System.out.println("1 - Sim\t2- Não");
-                Scanner scanner = new Scanner(System.in);
-                escolha = scanner.nextLine();
-            }while (!(escolha.equals("1") || escolha.equals("2")));
-                    if (escolha.equals("1"))
-                        codigo.ImprimirTokens();
-                    codigo.tabela();
+            codigo.ImprimirTokens();
                 }
                 arq.close();
             } catch(IOException e){

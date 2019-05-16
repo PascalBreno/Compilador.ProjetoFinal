@@ -1,4 +1,2 @@
-var
- a, b, c: integer;
- x,l: real
-if a+a then if a+b then a:=a+c+a
+lala 2()*/+-<>>=><if then $ while do
+write read; else begin end:, /*comentario*/ {comentario}

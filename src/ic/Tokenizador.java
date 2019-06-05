@@ -53,6 +53,12 @@ class Tokenizador extends JFrame {
                         peex.novoPeex();
                         posicaoAtual=posicaoAtual+2;
                         break;
+                    }else if(cprox=='='){
+                        AnalisarPalavra(peex);
+                        AdicionarToken("<=", TipoToken.menorIgual);
+                        peex.novoPeex();
+                        posicaoAtual=posicaoAtual+2;
+                        break;
                     }else{
                         AnalisarPalavra(peex);
                         AdicionarToken("<", TipoToken.menor);
@@ -71,7 +77,7 @@ class Tokenizador extends JFrame {
                 else if (catual=='>'){
                     if(cprox=='='){
                         AnalisarPalavra(peex);
-                        AdicionarToken(">=", TipoToken.menorIgual);//Analiza a palavra lida até o simbolo de pular Linha
+                        AdicionarToken(">=", TipoToken.maiorigual);//Analiza a palavra lida até o simbolo de pular Linha
                         peex.novoPeex();
                         posicaoAtual=posicaoAtual+2;
                         break;
@@ -209,45 +215,73 @@ class Tokenizador extends JFrame {
             AdicionarToken(peex.palavra, TipoToken.tokenElse);
         } else if (peex.palavra.equals(TipoToken.begin.toString())) {
             AdicionarToken(peex.palavra, TipoToken.begin);
+        } else if (peex.palavra.equals(TipoToken.program.toString())) {
+            AdicionarToken(peex.palavra, TipoToken.program);
+        } else if (peex.palavra.equals(TipoToken.procedure.toString())) {
+            AdicionarToken(peex.palavra, TipoToken.procedure);
         } else if (peex.palavra.equals(TipoToken.end.toString())) {
             AdicionarToken(peex.palavra, TipoToken.end);
         } else {
             //Aqui irei analisar a palavra que foi inserida antes dos operadores de CHAR
             if (!(peex.palavra.equals("")) && !(peex.palavra.equals(" ") ) && !(peex.palavra.equals("\n"))) {
-                if (!analisarnumero(peex.palavra)){
-                String alfabetoError = "0123456789!@#$%&;,./[]^~:|";
-                String simbolosError = "!@#$%&;,./[]^~:|";
-                boolean error = true;
-                for (int i = 0; i < 26; i++) {
-                    if (peex.palavra.charAt(0) == alfabetoError.charAt(i)) {
-                        error = true;
-                        break;
-                    } else {
-                        error = false;
-                    }
-                }
-                if (error) {
-                    AdicionarToken(peex.palavra, TipoToken.Error);
-                    Errotokenizador = true;
-                } else {
-                    for (int x = 0; x < peex.palavra.length(); x++) {
-                        for (int y = 0; y < 16; y++) {
-                            if (peex.palavra.charAt(x) == simbolosError.charAt(y)) {
-                                error = true;
-                                break;
-                            } else {
-                                error = false;
-                            }
+                if (!analisarnumero(peex.palavra)) {
+                    if (!analisarnumerodouble(peex.palavra)){
+                        String alfabetoError = "0123456789!@#$%&;,./[]^~:|";
+                        String simbolosError = "!@#$%&;,./[]^~:|";
+                        boolean error = true;
+                    for (int i = 0; i < 26; i++) {
+                        if (peex.palavra.charAt(0) == alfabetoError.charAt(i)) {
+                            error = true;
+                            break;
+                        } else {
+                            error = false;
                         }
                     }
                     if (error) {
                         AdicionarToken(peex.palavra, TipoToken.Error);
                         Errotokenizador = true;
-                    } else
-                        AdicionarToken(peex.palavra, TipoToken.Identificador);
+                    } else {
+                        for (int x = 0; x < peex.palavra.length(); x++) {
+                            for (int y = 0; y < 16; y++) {
+                                if (peex.palavra.charAt(x) == simbolosError.charAt(y)) {
+                                    error = true;
+                                    break;
+                                } else {
+                                    error = false;
+                                }
+                            }
+                        }
+                        if (error) {
+                            AdicionarToken(peex.palavra, TipoToken.Error);
+                            Errotokenizador = true;
+                        } else
+                            AdicionarToken(peex.palavra, TipoToken.Identificador);
+                    }
                 }
+
             }}
         }
+    }
+
+    private boolean analisarnumerodouble(String numero) {
+        String numeroDouble= ".0123456789";
+        boolean result = false;
+        for(int i=0; i<numero.length();i++){
+            for (int j=0; j<11;j++) {
+                if (numero.charAt(i) == numeroDouble.charAt(j)) {
+                    result = true;
+                    break;
+                }else{
+                    result = false;
+                }
+            }
+            if(!result)
+                break;
+        }
+        if(result)
+            AdicionarToken(peex.palavra, TipoToken.numeroReal);
+
+        return result;
     }
 
     private boolean analisarnumero(String numero) {
@@ -258,13 +292,15 @@ class Tokenizador extends JFrame {
             for (int j=0; j<10;j++) {
                 if (numero.charAt(i) == numeroInt.charAt(j)) {
                     result = true;
-                    AdicionarToken(peex.palavra, TipoToken.numeroInt);
-                    break;
                 }else{
                     result = false;
+                    break;
                 }
             }
         }
+        if(result)
+            AdicionarToken(peex.palavra, TipoToken.numeroInt);
+
 
         return result;
     }

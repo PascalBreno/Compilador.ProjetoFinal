@@ -1,2 +1,4 @@
-lala 2()*/+-<>>=><if then $ while do
-write read; else begin end:, /*comentario*/ {comentario}
+program nome2
+/*exe*mplo2*/
+var a, x:real :=12.55;
+end

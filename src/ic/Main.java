@@ -28,6 +28,7 @@ public class Main {
                 System.out.println("Erro no tokenizador. Impossivel fazer a analise.");
             } else {
             codigo.ImprimirTokens();
+            codigo.tabela();
                 }
                 arq.close();
             } catch(IOException e){

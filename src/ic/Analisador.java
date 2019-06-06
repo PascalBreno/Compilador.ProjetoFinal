@@ -44,14 +44,7 @@ class Analisador extends Tokenizador {
         System.out.println("Tabela de Simbolos: ");
         System.out.println("------------------------");
         System.out.println("Nome\t\tTipo\t\t\tTipo Token");
-        do {
-            System.out.println(tabela.get(i).token.cod + "\t\t|\t" + tabela.get(i).token.tipoToken
-                    + "\t|\t" + tabela.get(i).tipoToken);
-            i++;
-            tamanho--;
-        } while (tamanho > 0);
         System.out.println("------------------------");
-        imprimirCodInter();
     }
 
     private void proxToken() {
@@ -88,6 +81,7 @@ class Analisador extends Tokenizador {
     private void corpo() {
         dc();
         if (tokenAtual.tipoToken == TipoToken.begin) {
+            proxToken();
             comandos();
             if (tokenAtual.tipoToken == TipoToken.end) {
             } else {
@@ -108,6 +102,7 @@ class Analisador extends Tokenizador {
     }
 
     private void dc() {
+        //<dc> ::= <dc_v> <mais_dc> | <dc_p> <mais_dc> | λ
         if (dc_v())
             mais_dc();
         else if (dc_p())
@@ -117,10 +112,12 @@ class Analisador extends Tokenizador {
     }
 
     private boolean dc_v() {
+        //<dc_v> ::= var <variaveis> : <tipo_var>
         if (tokenAtual.tipoToken == TipoToken.var) {
             proxToken();
             variaveis();
             if (tokenAtual.tipoToken == TipoToken.doispontos) {
+                proxToken();
                 tipo_var();
                 return true;
             } else {
@@ -133,6 +130,7 @@ class Analisador extends Tokenizador {
     }
 
     private boolean dc_p() {
+        //<dc_p> ::= procedure ident <parametros> <corpo_p>
         if (tokenAtual.tipoToken == TipoToken.procedure) {
             proxToken();
             if (tokenAtual.tipoToken == TipoToken.Identificador) {
@@ -144,7 +142,6 @@ class Analisador extends Tokenizador {
                 Error(TipoToken.Identificador);
             }
         } else {
-            Error(TipoToken.procedure);
             return false;
         }
         return false;
@@ -152,11 +149,11 @@ class Analisador extends Tokenizador {
 
     private void corpo_p() {
         //<dc_loc> begin <comandos> end
+        //<dc_loc> begin <comandos> end
         dc_loc();
         if (tokenAtual.tipoToken == TipoToken.begin) {
             proxToken();
             comandos();
-            proxToken();
             if (tokenAtual.tipoToken == TipoToken.end) {
                 proxToken();
             } else {
@@ -170,7 +167,6 @@ class Analisador extends Tokenizador {
     private void dc_loc() {
         //<dc_v> <mais_dcloc> | λ
         if (dc_v()) {
-            proxToken();
             mais_dcloc();
         } else {
 
@@ -240,6 +236,7 @@ class Analisador extends Tokenizador {
     private void mais_comandos() {
         //; <comandos> | λ
         if (tokenAtual.tipoToken == TipoToken.PontoEVirgula) {
+            proxToken();
             comandos();
         }
     }
@@ -251,6 +248,18 @@ class Analisador extends Tokenizador {
         // if <condicao> then <comandos> <pfalsa> $ |
         // ident <restoIdent>
         if (tokenAtual.tipoToken == TipoToken.tokenReada) {
+            proxToken();
+            if(tokenAtual.tipoToken==TipoToken.abreParenteces){
+                proxToken();
+                variaveis();
+                if(tokenAtual.tipoToken==TipoToken.multiplicacao.fechaParenteses){
+                    proxToken();
+                }else{
+                    Error(TipoToken.fechaParenteses);
+                }
+            }else{
+                Error(TipoToken.abreParenteces);
+            }
 
         } else if (tokenAtual.tipoToken == TipoToken.inicioWrite) {
 
@@ -259,7 +268,9 @@ class Analisador extends Tokenizador {
         } else if (tokenAtual.tipoToken == TipoToken.PalavraReservadaIF) {
 
         } else if (tokenAtual.tipoToken == TipoToken.Identificador) {
-
+            // ident <restoIdent>
+            proxToken();
+            restoIdent();
         } else {
             Error(TipoToken.Error);
         }
@@ -376,9 +387,9 @@ class Analisador extends Tokenizador {
         if (tokenAtual.tipoToken == TipoToken.Identificador) {
             proxToken();
         } else if (tokenAtual.tipoToken == TipoToken.numeroInt) {
-
+            proxToken();
         } else if (tokenAtual.tipoToken == TipoToken.numeroReal) {
-
+            proxToken();
         } else if (tokenAtual.tipoToken == TipoToken.abreParenteces) {
             proxToken();
             expressao();
@@ -412,11 +423,9 @@ class Analisador extends Tokenizador {
             proxToken();
             tipo_var();
             mais_par();
-            proxToken();
         } else {
             Error(TipoToken.doispontos);
         }
-        proxToken();
     }
 
     private void mais_par() {
@@ -429,9 +438,9 @@ class Analisador extends Tokenizador {
     }
 
     private void tipo_var() {
-        if (tokenAtual.tipoToken == TipoToken.numeroReal) {
+        if (tokenAtual.tipoToken == TipoToken.integer) {
             proxToken();
-        } else if (tokenAtual.tipoToken == TipoToken.numeroInt) {
+        } else if (tokenAtual.tipoToken == TipoToken.real) {
             proxToken();
         } else {
             Error(TipoToken.numeroInt);
@@ -470,6 +479,7 @@ class Analisador extends Tokenizador {
 
     private void variaveis() {
         if (tokenAtual.tipoToken == TipoToken.Identificador) {
+            proxToken();
             mais_var();
         } else {
             Error(TipoToken.Identificador);
@@ -488,14 +498,11 @@ class Analisador extends Tokenizador {
     }
 
     private void mais_dc() {
-        if (tokenAtual.tipoToken == TipoToken.OperadordeAtribuicao) {
-            proxToken();
+        //<mais_dc> ::= ; <dc> | λ
             if (tokenAtual.tipoToken == TipoToken.PontoEVirgula) {
+                proxToken();
                 dc();
             } else {
-                Error(TipoToken.PontoEVirgula);
-            }
-        } else {
 
         }
     }

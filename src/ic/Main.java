@@ -1,5 +1,5 @@
 package ic;
-
+//Não pode declarar o valor das variáveis na declaração
 import javax.swing.*;
 import java.io.BufferedReader;
 import java.io.FileReader;

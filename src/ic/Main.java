@@ -1,5 +1,5 @@
 package ic;
-
+//Não pode declarar o valor das variáveis na declaração
 import javax.swing.*;
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -28,6 +28,7 @@ public class Main {
                 System.out.println("Erro no tokenizador. Impossivel fazer a analise.");
             } else {
             codigo.ImprimirTokens();
+            codigo.tabela();
                 }
                 arq.close();
             } catch(IOException e){

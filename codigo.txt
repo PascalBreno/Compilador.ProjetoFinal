@@ -1,2 +1,6 @@
-lala 2()*/+-<>>=><if then $ while do
-write read; else begin end:, /*comentario*/ {comentario}
+program teste
+    /* programa teste */
+    var a,b,c:integer
+    var e:real @
+    begin reada); {ler}
+    c:=d

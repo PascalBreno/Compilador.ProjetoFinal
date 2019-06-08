@@ -25,6 +25,7 @@ public enum TipoToken {
     var("var"),
     Virgula(","),
     doispontos(":"),
+    program(" "),
     real("real"),
     Error(""),
     fimDeBloco("$"),

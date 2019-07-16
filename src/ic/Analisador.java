@@ -6,10 +6,12 @@ import java.util.Stack;
 
 class Analisador extends Tokenizador {
 
+
+
     Analisador(String codigo) {
         super(codigo);
     }
-
+    private String TipoVar;
     private int valorTokenAtual = -1;
     private Token tokenAtual;
     private Boolean error = false;
@@ -27,7 +29,9 @@ class Analisador extends Tokenizador {
     private Boolean valorE = false;
     private Stack<String> Temp = new Stack<String>();
     private Integer id = 0;
-
+    private String TipoVar = "Integer";
+    private List<String> ListVar = new ArrayList<>();
+    private String bloco = "Global";
     void tabela() {
         System.out.println("Inicio da Analise Descendente:\n");
         program();
@@ -114,11 +118,14 @@ class Analisador extends Tokenizador {
     private boolean dc_v() {
         //<dc_v> ::= var <variaveis> : <tipo_var>
         if (tokenAtual.tipoToken == TipoToken.var) {
+            LimparListVar();
             proxToken();
             variaveis();
+            CheckVar();
             if (tokenAtual.tipoToken == TipoToken.doispontos) {
                 proxToken();
                 tipo_var();
+                InserirTSVar();
                 return true;
             } else {
                 Error(TipoToken.doispontos);
@@ -127,6 +134,26 @@ class Analisador extends Tokenizador {
             return false;
         }
         return false;
+    }
+
+    private void InserirTSVar() {
+        int tam = this.ListVar.size();
+        for (int i=0; i<tam;i++){
+
+    //        this.tabela.add(this.ListVar.get(i),this.tipoVar, this.bloco );
+        }
+    }
+
+    private void CheckVar() {
+        int tamvar = this.ListVar.size();
+        int tamtab = this.tabela.size();
+        for (int i=0; i<tamvar; i++){
+
+        }
+    }
+
+    private void LimparListVar() {
+        this.ListVar.clear();
     }
 
     private boolean dc_p() {
@@ -478,8 +505,10 @@ class Analisador extends Tokenizador {
 
     private void tipo_var() {
         if (tokenAtual.tipoToken == TipoToken.integer) {
+            this.TipoVar = "Integer";
             proxToken();
         } else if (tokenAtual.tipoToken == TipoToken.real) {
+            this.TipoVar = "Real";
             proxToken();
         } else {
             Error(TipoToken.numeroInt);
@@ -518,6 +547,7 @@ class Analisador extends Tokenizador {
 
     private void variaveis() {
         if (tokenAtual.tipoToken == TipoToken.Identificador) {
+            //AddListVar();
             proxToken();
             mais_var();
         } else {

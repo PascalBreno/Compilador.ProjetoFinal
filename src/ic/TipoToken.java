@@ -39,6 +39,7 @@ public enum TipoToken {
     tokenElse("else"),
     begin("begin"),
     end("end"),
+    ponto("."),
     // Erros
     TipodeVariavel("Tipo de Variavel (Real ou Integer)"),
     IdentificadorOuPalavraReservada("Esperava um IF ou Um identificador");

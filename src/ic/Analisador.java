@@ -3,6 +3,7 @@ package ic;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
+import java.util.logging.ErrorManager;
 
 class Analisador extends Tokenizador {
 
@@ -11,7 +12,6 @@ class Analisador extends Tokenizador {
     Analisador(String codigo) {
         super(codigo);
     }
-    private String TipoVar;
     private int valorTokenAtual = -1;
     private Token tokenAtual;
     private Boolean error = false;
@@ -30,7 +30,7 @@ class Analisador extends Tokenizador {
     private Stack<String> Temp = new Stack<String>();
     private Integer id = 0;
     private String TipoVar = "Integer";
-    private List<String> ListVar = new ArrayList<>();
+    private List<Token> ListVar = new ArrayList<>();
     private String bloco = "Global";
     void tabela() {
         System.out.println("Inicio da Analise Descendente:\n");
@@ -138,22 +138,40 @@ class Analisador extends Tokenizador {
 
     private void InserirTSVar() {
         int tam = this.ListVar.size();
-        for (int i=0; i<tam;i++){
 
-    //        this.tabela.add(this.ListVar.get(i),this.tipoVar, this.bloco );
+        for (int i=0; i<tam;i++){
+            Tabela valor;
+            if(this.TipoVar.equals("integer"))
+                valor = new Tabela(this.ListVar.get(i),TipoToken.integer, this.bloco );
+            else
+                valor = new Tabela(this.ListVar.get(i),TipoToken.real, this.bloco );
+            this.tabela.add(valor);
         }
     }
 
     private void CheckVar() {
-        int tamvar = this.ListVar.size();
-        int tamtab = this.tabela.size();
-        for (int i=0; i<tamvar; i++){
-
+        int tamVar = this.ListVar.size(); // Nº De variaveis
+        int tamTabSim = this.tabela.size(); // Nº De Valores na tabela de Símbolo
+        for (int i=0; i<tamVar; i++){
+            for(int j=0;j<tamTabSim;j++){
+                //Para cada Iteração você deve verificar com toda a Tabela.
+                if(!checkTS(j, i)){
+                    System.exit(0);
+                }
+            }
         }
     }
+    public boolean checkTS(int j, int i){
+        if(this.tabela.get(j).token.cod.equals(this.ListVar.get(i))
+                && (this.tabela.get(j).bloco.equals(this.ListVar.get(i)))){
+            Error(TipoToken.Error);
+            System.out.println("Erro na verificação na Tabela");
 
+        }
+        return true;
+    }
     private void LimparListVar() {
-        this.ListVar.clear();
+        this.ListVar.removeAll(this.ListVar);
     }
 
     private boolean dc_p() {
@@ -161,6 +179,7 @@ class Analisador extends Tokenizador {
         if (tokenAtual.tipoToken == TipoToken.procedure) {
             proxToken();
             if (tokenAtual.tipoToken == TipoToken.Identificador) {
+                this.bloco = tokenAtual.cod;
                 proxToken();
                 parametros();
                 corpo_p();
@@ -546,8 +565,18 @@ class Analisador extends Tokenizador {
     }
 
     private void variaveis() {
+        int tam;
         if (tokenAtual.tipoToken == TipoToken.Identificador) {
-            //AddListVar();
+            if(this.ListVar.size()>0){
+                tam =this.ListVar.size();
+                for(int i=0; i<tam;i++){
+                    if(tokenAtual.cod.equals(this.ListVar.get(i).cod)) {
+                        Error(TipoToken.Error);
+                        System.out.println("Erro");
+                    }
+                }
+            }
+            this.ListVar.add(tokenAtual);
             proxToken();
             mais_var();
         } else {

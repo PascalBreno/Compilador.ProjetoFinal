@@ -2,8 +2,9 @@ program teste
 
 /* declaracao de variaveis */
 var a,b,c: integer;
-var d,e,f: real;
+var d,e,f,a: real;
 var g,h : integer;
+var b: real ;
 
 /* declaracao de procedimentos */
 procedure um (a, g: real; d, c: integer)

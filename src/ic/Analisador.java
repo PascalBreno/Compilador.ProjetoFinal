@@ -1,5 +1,7 @@
 package ic;
 
+import kotlin.jvm.JvmOverloads;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
@@ -29,7 +31,7 @@ class Analisador extends Tokenizador {
     private Boolean valorE = false;
     private Stack<String> Temp = new Stack<String>();
     private Integer id = 0;
-    private String TipoVar = "Integer";
+    private TipoToken TipoVar = TipoToken.integer;
     private List<Token> ListVar = new ArrayList<>();
     private String bloco = "Global";
     void tabela() {
@@ -104,6 +106,10 @@ class Analisador extends Tokenizador {
         System.out.println("Linha"+ tokenAtual.linha);
         System.exit(1);
     }
+    private void Error(String mensagem){
+        System.out.println(mensagem);
+        System.exit(1);
+    }
 
     private void dc() {
         //<dc> ::= <dc_v> <mais_dc> | <dc_p> <mais_dc> | λ
@@ -121,10 +127,10 @@ class Analisador extends Tokenizador {
             LimparListVar();
             proxToken();
             variaveis();
-            CheckVar();
             if (tokenAtual.tipoToken == TipoToken.doispontos) {
                 proxToken();
                 tipo_var();
+                CheckVar();
                 InserirTSVar();
                 return true;
             } else {
@@ -141,12 +147,13 @@ class Analisador extends Tokenizador {
 
         for (int i=0; i<tam;i++){
             Tabela valor;
-            if(this.TipoVar.equals("integer"))
+            if(this.TipoVar ==TipoToken.integer)
                 valor = new Tabela(this.ListVar.get(i),TipoToken.integer, this.bloco );
             else
                 valor = new Tabela(this.ListVar.get(i),TipoToken.real, this.bloco );
             this.tabela.add(valor);
         }
+        LimparListVar();
     }
 
     private void CheckVar() {
@@ -162,10 +169,11 @@ class Analisador extends Tokenizador {
         }
     }
     public boolean checkTS(int j, int i){
-        if(this.tabela.get(j).token.cod.equals(this.ListVar.get(i))
-                && (this.tabela.get(j).bloco.equals(this.ListVar.get(i)))){
+        if(this.tabela.get(j).token.cod.equals(this.ListVar.get(i).cod)
+                && (this.tabela.get(j).bloco.equals(this.bloco))
+                && this.tabela.get(j).tipoToken == this.TipoVar){
+            System.out.println("Erro na verificação na Tabela "+this.ListVar.get(i).cod);
             Error(TipoToken.Error);
-            System.out.println("Erro na verificação na Tabela");
 
         }
         return true;
@@ -297,6 +305,7 @@ class Analisador extends Tokenizador {
             proxToken();
             if(tokenAtual.tipoToken==TipoToken.abreParenteces){
                 proxToken();
+                LimparListVar();
                 variaveis();
                 if(tokenAtual.tipoToken==TipoToken.multiplicacao.fechaParenteses){
                     proxToken();
@@ -312,6 +321,7 @@ class Analisador extends Tokenizador {
             proxToken();
             if(tokenAtual.tipoToken==TipoToken.abreParenteces){
                 proxToken();
+                LimparListVar();
                 variaveis();
                 if(tokenAtual.tipoToken==TipoToken.fechaParenteses){
                     proxToken();
@@ -503,6 +513,8 @@ class Analisador extends Tokenizador {
     }
 
     private void lista_par() {
+        LimparListVar();
+
         variaveis();
         if (tokenAtual.tipoToken == TipoToken.doispontos) {
             proxToken();
@@ -524,10 +536,10 @@ class Analisador extends Tokenizador {
 
     private void tipo_var() {
         if (tokenAtual.tipoToken == TipoToken.integer) {
-            this.TipoVar = "Integer";
+            this.TipoVar = TipoToken.integer;
             proxToken();
         } else if (tokenAtual.tipoToken == TipoToken.real) {
-            this.TipoVar = "Real";
+            this.TipoVar = TipoToken.real;
             proxToken();
         } else {
             Error(TipoToken.numeroInt);
@@ -572,7 +584,6 @@ class Analisador extends Tokenizador {
                 for(int i=0; i<tam;i++){
                     if(tokenAtual.cod.equals(this.ListVar.get(i).cod)) {
                         Error(TipoToken.Error);
-                        System.out.println("Erro");
                     }
                 }
             }

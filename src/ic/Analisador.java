@@ -46,11 +46,14 @@ class Analisador extends Tokenizador {
 
     private void imprimirTabela() {
         int tamanho = tabela.size();
-        int i = 0;
         System.out.println("Tabela de Simbolos: ");
         System.out.println("------------------------");
-        System.out.println("Nome\t\tTipo\t\t\tTipo Token");
+        System.out.println("Nome\t\t\t\tTipo\t\t\t\t\tTipo Token\t\t\t\tBloco");
         System.out.println("------------------------");
+        for(int i=0; i<tamanho;i++){
+            System.out.println(tabela.get(i).token.cod + " \t\t\t\t"+tabela.get(i).tipoToken+"\t\t\t\t\t"+tabela.get(i).token.tipoToken+"\t\t\t\t"+tabela.get(i).bloco
+                    +"\n================================================================");
+        }
     }
 
     private void proxToken() {
@@ -162,21 +165,20 @@ class Analisador extends Tokenizador {
         for (int i=0; i<tamVar; i++){
             for(int j=0;j<tamTabSim;j++){
                 //Para cada Iteração você deve verificar com toda a Tabela.
-                if(!checkTS(j, i)){
-                    System.exit(0);
+                checkTS(j, i);
                 }
             }
         }
-    }
-    public boolean checkTS(int j, int i){
+
+    public void checkTS(int j, int i){
         if(this.tabela.get(j).token.cod.equals(this.ListVar.get(i).cod)
                 && (this.tabela.get(j).bloco.equals(this.bloco))
                 && this.tabela.get(j).tipoToken == this.TipoVar){
-            System.out.println("Erro na verificação na Tabela "+this.ListVar.get(i).cod);
-            Error(TipoToken.Error);
+            int linha = this.tabela.get(j).token.linha+1;
+            String msg = "Impossível Compilar. A variável {"+this.tabela.get(j).token.cod+"} foi declarado mais de uma vez na linha "+linha+"." ;
+            Error(msg);
 
         }
-        return true;
     }
     private void LimparListVar() {
         this.ListVar.removeAll(this.ListVar);
@@ -256,6 +258,7 @@ class Analisador extends Tokenizador {
         //ident <mais_ident>
         if (tokenAtual.tipoToken == TipoToken.Identificador) {
             proxToken();
+
             mais_ident();
         } else {
             Error(TipoToken.Identificador);
@@ -264,6 +267,7 @@ class Analisador extends Tokenizador {
 
     private void mais_ident() {
         //; <argumentos> | λ
+
         if (tokenAtual.tipoToken == TipoToken.PontoEVirgula) {
             proxToken();
             argumentos();
@@ -307,6 +311,7 @@ class Analisador extends Tokenizador {
                 proxToken();
                 LimparListVar();
                 variaveis();
+
                 if(tokenAtual.tipoToken==TipoToken.multiplicacao.fechaParenteses){
                     proxToken();
                 }else{
@@ -363,15 +368,39 @@ class Analisador extends Tokenizador {
                 Error(TipoToken.Then);
             }
         } else if (tokenAtual.tipoToken == TipoToken.Identificador) {
-            // ident <restoIdent>
-            proxToken();
+
             restoIdent();
         } else {
             Error(TipoToken.Error);
         }
     }
+    private Token tipoVarTS(){
+        int tam =this.tabela.size();
+        for(int i=0; i<tam;i++){
+            if(this.tabela.get(i).token.cod.equals(tokenAtual.cod) && this.tabela.get(i).bloco.equals(this.bloco)){
+                return this.tabela.get(i).token;
+            }
+        }
+        for(int i=0; i<tam;i++){
+            if(this.tabela.get(i).token.cod.equals(tokenAtual.cod)){
+                return this.tabela.get(i).token;
+            }
+        }
+        return null;
+    }
 
     private void restoIdent() {
+        Token token = tipoVarTS();
+        if(token==null) {
+            token = tokenAtual;
+            this.TipoVar = token.tipoToken;
+            proxToken();
+            if (tokenAtual.tipoToken == TipoToken.OperadordeAtribuicao)
+                Error("Error: É impossível continuar, a variável '" + token.cod + "' não foi declarada " +
+                        "na linha " + token.linha+1);
+        }else{
+            proxToken();
+        }
         // := <expressao> | <lista_arg>
         if (tokenAtual.tipoToken == TipoToken.OperadordeAtribuicao) {
             proxToken();
@@ -482,8 +511,12 @@ class Analisador extends Tokenizador {
         if (tokenAtual.tipoToken == TipoToken.Identificador) {
             proxToken();
         } else if (tokenAtual.tipoToken == TipoToken.numeroInt) {
+            if(this.TipoVar!=TipoToken.numeroInt)
+                Error("Tipos de variáveis não são compatíveis na linha "+this.tokenAtual.cod+" "+this.linha);
             proxToken();
         } else if (tokenAtual.tipoToken == TipoToken.numeroReal) {
+            if(this.TipoVar!=TipoToken.numeroReal)
+                Error("Tipos de variáveis não são compatíveis: "+this.TipoVar+ (this.tokenAtual.linha+1));
             proxToken();
         } else if (tokenAtual.tipoToken == TipoToken.abreParenteces) {
             proxToken();
@@ -514,11 +547,12 @@ class Analisador extends Tokenizador {
 
     private void lista_par() {
         LimparListVar();
-
         variaveis();
         if (tokenAtual.tipoToken == TipoToken.doispontos) {
             proxToken();
             tipo_var();
+            CheckVar();
+            InserirTSVar();
             mais_par();
         } else {
             Error(TipoToken.doispontos);
@@ -583,7 +617,7 @@ class Analisador extends Tokenizador {
                 tam =this.ListVar.size();
                 for(int i=0; i<tam;i++){
                     if(tokenAtual.cod.equals(this.ListVar.get(i).cod)) {
-                        Error(TipoToken.Error);
+                        Error("Erro no token '"+ tokenAtual.cod+"', ele foi declardo mais de uma vez.");
                     }
                 }
             }

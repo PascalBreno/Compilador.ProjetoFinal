@@ -2,14 +2,15 @@ program teste
 
 /* declaracao de variaveis */
 var a,b,c: integer;
-var d,e,f,a: real;
-var g,h : integer;
-var b: real ;
+var d,e,f: real;
+var a,b,c: real ;
+var g :integer;
 
 /* declaracao de procedimentos */
-procedure um (a, g: real; d, c: integer)
+procedure um (a, g: real; d: integer; abc:real)
   var h, i, j: real;
-  var l: integer
+  var l: integer;
+  var c: integer;
 begin
   h := 2.0;
   a := g + 3.4 / h;

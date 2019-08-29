@@ -10,6 +10,9 @@ import java.util.logging.ErrorManager;
 class Analisador extends Tokenizador {
 
 
+    private boolean ValorProcedureAtribuido = false;
+    private List<String> listProcedureDeclarado = new ArrayList<>();
+    private String NomeProceudore;
 
     Analisador(String codigo) {
         super(codigo);
@@ -19,21 +22,16 @@ class Analisador extends Tokenizador {
     private Boolean error = false;
     private List<Token> tipotokenListId = new ArrayList<>();
     private List<Tabela> tabela = new ArrayList<>();
-    private int ListID = 0;
     private Stack<String> E = new Stack<>();
     private List<String> R = new ArrayList<>();
     private List<Token> Id = new ArrayList<>();
-    private Integer temp = 1;
     private List<String> Cod_inte = new ArrayList<>();
-    private List<String> quad = new ArrayList<>();
-    private Boolean atr = false;
-    private String valorT = "";
-    private Boolean valorE = false;
     private Stack<String> Temp = new Stack<String>();
-    private Integer id = 0;
+    private Boolean procedureBool = false;
     private TipoToken TipoVar = TipoToken.integer;
     private List<Token> ListVar = new ArrayList<>();
-    private List<Token> ListFuncao = new ArrayList<>();
+    private List<Procedure> ListFuncao = new ArrayList<>();
+    private Procedure newprocedure = new Procedure();
     private String bloco = "Global";
     void tabela() {
         System.out.println("Inicio da Analise Descendente:\n");
@@ -94,6 +92,7 @@ class Analisador extends Tokenizador {
             proxToken();
             comandos();
             if (tokenAtual.tipoToken == TipoToken.end) {
+                this.bloco="Global";
             } else {
                 Error(TipoToken.end);
             }
@@ -189,11 +188,17 @@ class Analisador extends Tokenizador {
     private boolean dc_p() {
         //<dc_p> ::= procedure ident <parametros> <corpo_p>
         if (tokenAtual.tipoToken == TipoToken.procedure) {
+            this.procedureBool = true;
             proxToken();
             if (tokenAtual.tipoToken == TipoToken.Identificador) {
+                this.newprocedure = new Procedure();
+                this.newprocedure.setNome(tokenAtual.cod);
                 this.bloco = tokenAtual.cod;
                 proxToken();
                 parametros();
+                this.ListFuncao.add(this.newprocedure);
+                this.procedureBool = false;
+                this.newprocedure = null;
                 corpo_p();
                 return true;
             } else {
@@ -213,6 +218,7 @@ class Analisador extends Tokenizador {
             proxToken();
             comandos();
             if (tokenAtual.tipoToken == TipoToken.end) {
+                this.bloco = "Global";
                 proxToken();
             } else {
                 Error(TipoToken.end);
@@ -243,10 +249,14 @@ class Analisador extends Tokenizador {
 
     private void lista_arg() {
         //(<argumentos>) | λ
+        //Aqui vem para os procedure hihih
         if (tokenAtual.tipoToken == TipoToken.abreParenteces) {
             proxToken();
             argumentos();
             if (tokenAtual.tipoToken == TipoToken.fechaParenteses) {
+                if(this.ValorProcedureAtribuido) {
+                    this.ValorProcedureAtribuido = false;
+                }
                 proxToken();
             } else {
                 Error(TipoToken.fechaParenteses);
@@ -259,8 +269,11 @@ class Analisador extends Tokenizador {
     private void argumentos() {
         //ident <mais_ident>
         if (tokenAtual.tipoToken == TipoToken.Identificador) {
+            //Verificar aqui a lista dos procedure e verificar com o que foi delcarado
+            if(this.ValorProcedureAtribuido) {
+                this.listProcedureDeclarado.add(tokenAtual.cod);
+            }
             proxToken();
-
             mais_ident();
         } else {
             Error(TipoToken.Identificador);
@@ -273,8 +286,59 @@ class Analisador extends Tokenizador {
         if (tokenAtual.tipoToken == TipoToken.PontoEVirgula) {
             proxToken();
             argumentos();
+            if(this.ValorProcedureAtribuido) {
+                System.out.println("Testar um valor aqui");
+                //Verificar as variaveis
+                verificarDeclracaonoProcedure();
+            }
         } else {
         }
+    }
+
+    private void verificarDeclracaonoProcedure() {
+        Procedure procedure = new Procedure();
+        //Aqui irá pegar as variaveis da função
+        int tam = this.ListFuncao.size();
+        for(int i=0; i<tam;i++){
+            if(this.NomeProceudore.equals(this.ListFuncao.get(i).nome)){
+                procedure = this.ListFuncao.get(i);
+            }
+        }
+        int tamArgumento = procedure.listArg.size();
+        for (int j=0; j<tamArgumento;j++){
+            if(j>=this.listProcedureDeclarado.size())
+                Error("Número de declarações da função"+ procedure.nome+" não são correspondentes");
+            //Aqui irá verificar os tipos HELP DEUSs
+            verificaVariavelProcedure(this.listProcedureDeclarado.get(j), procedure.listTipoToken.get(j), procedure.nome);
+        }
+        int tamPro = this.listProcedureDeclarado.size();
+        for(int k=0; k<tamPro;k++){
+
+            this.listProcedureDeclarado.remove(0);
+        }
+        this.ValorProcedureAtribuido = false;
+
+    }
+
+    private void verificaVariavelProcedure(String cod, TipoToken tipoToken, String bloco) {
+        //this.listProcedureDeclarado Verificar isso aqui e se está na tabela de simbolos os valores.
+        System.out.println("Verificando se "+ cod+ " está no tipo "+tipoToken);
+        Boolean exist = false;
+        int tamTab = this.tabela.size();
+        for(int i=0; i<tamTab;i++){
+            if((tabela.get(i).bloco.equals("Global") &&
+                tabela.get(i).token.cod.equals(cod) && tabela.get(i).tipoToken ==tipoToken
+            )){
+                exist= true;
+                break;
+            }
+        }
+
+        if(!exist)
+            Error(" A variavel "+cod+ " não possui o mesmo tipo ou não foi declarada na função "+bloco);
+
+        //Chegar na tabela de simbolos se o código aplicado é o mesmo colocado na tabela.
+
     }
 
     private void pfalsa() {
@@ -313,7 +377,6 @@ class Analisador extends Tokenizador {
                 proxToken();
                 LimparListVar();
                 variaveis();
-
                 if(tokenAtual.tipoToken==TipoToken.multiplicacao.fechaParenteses){
                     proxToken();
                 }else{
@@ -323,7 +386,8 @@ class Analisador extends Tokenizador {
                 Error(TipoToken.abreParenteces);
             }
 
-        } else if (tokenAtual.tipoToken == TipoToken.inicioWrite) {
+        }
+        else if (tokenAtual.tipoToken == TipoToken.inicioWrite) {
 // write (<variaveis>) |
             proxToken();
             if(tokenAtual.tipoToken==TipoToken.abreParenteces){
@@ -338,7 +402,8 @@ class Analisador extends Tokenizador {
             }else{
                 Error(TipoToken.abreParenteces);
             }
-        } else if (tokenAtual.tipoToken == TipoToken.inicioWhile) {
+        }
+        else if (tokenAtual.tipoToken == TipoToken.inicioWhile) {
 // while <condicao> do <comandos> $ |
             proxToken();
             condicao();
@@ -353,7 +418,8 @@ class Analisador extends Tokenizador {
             }else{
                 Error(TipoToken.inicioDo);
             }
-        } else if (tokenAtual.tipoToken == TipoToken.PalavraReservadaIF) {
+        }
+        else if (tokenAtual.tipoToken == TipoToken.PalavraReservadaIF) {
             // if <condicao> then <comandos> <pfalsa> $ |
             proxToken();
             condicao();
@@ -369,7 +435,10 @@ class Analisador extends Tokenizador {
             }else{
                 Error(TipoToken.Then);
             }
-        } else if (tokenAtual.tipoToken == TipoToken.Identificador) {
+        }
+        else if (tokenAtual.tipoToken == TipoToken.Identificador) {
+            //Verificar se esse identificador é uma variavel ou um procedure;
+            checkProcedure();
             restoIdent();
         } else {
             Error(TipoToken.Error);
@@ -377,15 +446,20 @@ class Analisador extends Tokenizador {
     }
 private void TokenTipoTokeniador(){
         //Aqui é pra verificar o tipo da variavel de identificação pra fazer a comparação entre as variaveis restantes
+    Boolean exist = false;
     int tam =this.tabela.size();
     for(int i=0; i<tam;i++){
         if(this.tabela.get(i).token.cod.equals(this.tokenAtual.cod) && this.tabela.get(i).bloco.equals(this.bloco)){
             this.TipoVar = this.tabela.get(i).tipoToken;
+            exist=true;
+            break;
         }
     }
-    for(int i=0; i<tam;i++){
-        if(this.tabela.get(i).token.cod.equals(tokenAtual.cod)){
-            this.TipoVar = this.tabela.get(i).tipoToken;
+    if(!exist) {
+        for (int i = 0; i < tam; i++) {
+            if (this.tabela.get(i).token.cod.equals(tokenAtual.cod)) {
+                this.TipoVar = this.tabela.get(i).tipoToken;
+            }
         }
     }
 }
@@ -420,9 +494,10 @@ private void TokenTipoTokeniador(){
         }
         // := <expressao> | <lista_arg>
         if (tokenAtual.tipoToken == TipoToken.OperadordeAtribuicao) {
-            proxToken();
-            expressao();
-        } else {
+            //Verificar aqui
+                proxToken();
+                expressao();
+            } else {
             lista_arg();
         }
     }
@@ -527,32 +602,72 @@ private void TokenTipoTokeniador(){
     private void fator() {
         //<fator> ::= ident | numero_int | numero_real | (<expressao>)
         if (tokenAtual.tipoToken == TipoToken.Identificador) {
+            tokenAtual = token.get(valorTokenAtual+1);
+            if(!(tokenAtual.tipoToken ==TipoToken.OperadordeAtribuicao)) {
+                tokenAtual = token.get(valorTokenAtual);
+                int tamTab = this.tabela.size();
+                Boolean exist = false;
+                for (int i = 0; i < tamTab; i++) {
+                    if (this.tabela.get(i).bloco.equals(this.bloco) && this.tabela.get(i).tipoToken.equals(this.TipoVar) && this.tabela.get(i).token.cod.equals(tokenAtual.cod)) {
+                        exist = true;
+                        break;
+                    }
+                }
+                if (!exist) {
+                    for (int i = 0; i < tamTab; i++) {
+                        if (this.tabela.get(i).bloco.equals("Global") && this.tabela.get(i).tipoToken.equals(this.TipoVar) && this.tabela.get(i).token.cod.equals(tokenAtual.cod)) {
+                            exist = true;
+                            break;
+                        }
+                    }
+                }
+                if (!exist)
+                    Error("Tipos não são compatíveis na linha " + tokenAtual.linha);
+            }
             proxToken();
-        } else if (tokenAtual.tipoToken == TipoToken.integer) {
+        }
+        else if (tokenAtual.tipoToken == TipoToken.integer) {
             if(this.TipoVar!=TipoToken.integer)
                 Error("Tipos de variáveis não são compatíveis na linha "+this.tokenAtual.linha+"   "+this.tokenAtual.cod+ " Variavel ");
             proxToken();
-        } else if (tokenAtual.tipoToken == TipoToken.numeroReal || tokenAtual.tipoToken == TipoToken.real ) {
-            if(this.TipoVar!=TipoToken.numeroReal && this.TipoVar!=TipoToken.real)
+        }
+        else if (tokenAtual.tipoToken == TipoToken.real) {
+            if(this.TipoVar!=TipoToken.real && this.TipoVar!=TipoToken.real)
                 Error("Tipos de variáveis não são compatíveis: "+this.tokenAtual.cod+ "Codigo e na Linha"+(this.tokenAtual.linha+1));
             proxToken();
-        } else if (tokenAtual.tipoToken == TipoToken.abreParenteces) {
+        }
+        else if (tokenAtual.tipoToken == TipoToken.abreParenteces) {
             proxToken();
             expressao();
+            //Verificar sobre os tipos declarados na função
             if (tokenAtual.tipoToken == TipoToken.fechaParenteses) {
                 proxToken();
+
             } else {
                 Error(TipoToken.fechaParenteses);
             }
-        } else {
+        }
+        else {
             Error(TipoToken.Error);
         }
+    }
+
+    private void checkProcedure() {
+        int tam = this.ListFuncao.size();
+        for(int i=0; i<tam;i++){
+            if(tokenAtual.cod.equals(this.ListFuncao.get(i).nome)) {
+                this.ValorProcedureAtribuido = true;
+                this.NomeProceudore = tokenAtual.cod;
+            }
+        }
+
     }
 
     private void parametros() {
         //Verificar
         if (tokenAtual.tipoToken == TipoToken.abreParenteces) {
             proxToken();
+            //Adicionar essas funções pro procedure atual que são os declarados
             lista_par();
             if (tokenAtual.tipoToken == TipoToken.fechaParenteses) {
                 proxToken();
@@ -567,6 +682,7 @@ private void TokenTipoTokeniador(){
     private void lista_par() {
         //Verificar os valores atribuidos na função do procedure;
         LimparListVar();
+
         variaveis();
         if (tokenAtual.tipoToken == TipoToken.doispontos) {
             proxToken();
@@ -591,12 +707,28 @@ private void TokenTipoTokeniador(){
     private void tipo_var() {
         if (tokenAtual.tipoToken == TipoToken.integer) {
             this.TipoVar = TipoToken.integer;
+            if(procedureBool)
+                aplicarTipoProcedure(TipoToken.integer);
             proxToken();
         } else if (tokenAtual.tipoToken == TipoToken.real) {
-            this.TipoVar = TipoToken.numeroReal;
+            this.TipoVar = TipoToken.real;
+            if(procedureBool)
+                aplicarTipoProcedure(TipoToken.real);
             proxToken();
         } else {
             Error(TipoToken.integer);
+        }
+    }
+
+    private void aplicarTipoProcedure(TipoToken valor) {
+        int tam =0;
+        if(this.newprocedure.listTipoToken.isEmpty())
+            tam = 0;
+        else
+            tam = this.newprocedure.listTipoToken.size();
+        int tamListVar = this.newprocedure.listArg.size();
+        for(; tam<tamListVar; tam++){
+            this.newprocedure.listTipoToken.add(valor);
         }
     }
 
@@ -641,6 +773,9 @@ private void TokenTipoTokeniador(){
                     }
                 }
             }
+            if(this.procedureBool)
+                this.newprocedure.setListArg(tokenAtual.cod);
+
             this.ListVar.add(tokenAtual);
             proxToken();
             mais_var();

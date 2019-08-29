@@ -286,7 +286,7 @@ class Tokenizador extends JFrame {
                 break;
         }
         if (result)
-            AdicionarToken(peex.palavra, TipoToken.numeroReal);
+            AdicionarToken(peex.palavra, TipoToken.real);
 
         return result;
     }

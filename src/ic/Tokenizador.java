@@ -299,16 +299,16 @@ class Tokenizador extends JFrame {
             for (int j = 0; j < 10; j++) {
                 if (numero.charAt(i) == numeroInt.charAt(j)) {
                     result = true;
+                    break;
                 } else {
                     result = false;
-                    break;
                 }
             }
+            if(!result)
+                break;
         }
         if (result)
-            AdicionarToken(peex.palavra, TipoToken.numeroInt);
-
-
+            AdicionarToken(peex.palavra, TipoToken.integer);
         return result;
     }
 

@@ -33,6 +33,7 @@ class Analisador extends Tokenizador {
     private Integer id = 0;
     private TipoToken TipoVar = TipoToken.integer;
     private List<Token> ListVar = new ArrayList<>();
+    private List<Token> ListFuncao = new ArrayList<>();
     private String bloco = "Global";
     void tabela() {
         System.out.println("Inicio da Analise Descendente:\n");
@@ -180,6 +181,7 @@ class Analisador extends Tokenizador {
 
         }
     }
+
     private void LimparListVar() {
         this.ListVar.removeAll(this.ListVar);
     }
@@ -368,16 +370,30 @@ class Analisador extends Tokenizador {
                 Error(TipoToken.Then);
             }
         } else if (tokenAtual.tipoToken == TipoToken.Identificador) {
-
             restoIdent();
         } else {
             Error(TipoToken.Error);
         }
     }
+private void TokenTipoTokeniador(){
+        //Aqui é pra verificar o tipo da variavel de identificação pra fazer a comparação entre as variaveis restantes
+    int tam =this.tabela.size();
+    for(int i=0; i<tam;i++){
+        if(this.tabela.get(i).token.cod.equals(this.tokenAtual.cod) && this.tabela.get(i).bloco.equals(this.bloco)){
+            this.TipoVar = this.tabela.get(i).tipoToken;
+        }
+    }
+    for(int i=0; i<tam;i++){
+        if(this.tabela.get(i).token.cod.equals(tokenAtual.cod)){
+            this.TipoVar = this.tabela.get(i).tipoToken;
+        }
+    }
+}
+
     private Token tipoVarTS(){
         int tam =this.tabela.size();
         for(int i=0; i<tam;i++){
-            if(this.tabela.get(i).token.cod.equals(tokenAtual.cod) && this.tabela.get(i).bloco.equals(this.bloco)){
+            if(this.tabela.get(i).token.cod.equals(this.tokenAtual.cod) && this.tabela.get(i).bloco.equals(this.bloco)){
                 return this.tabela.get(i).token;
             }
         }
@@ -392,13 +408,14 @@ class Analisador extends Tokenizador {
     private void restoIdent() {
         Token token = tipoVarTS();
         if(token==null) {
-            token = tokenAtual;
+            token = this.tokenAtual;
             this.TipoVar = token.tipoToken;
             proxToken();
             if (tokenAtual.tipoToken == TipoToken.OperadordeAtribuicao)
                 Error("Error: É impossível continuar, a variável '" + token.cod + "' não foi declarada " +
                         "na linha " + token.linha+1);
         }else{
+            TokenTipoTokeniador();
             proxToken();
         }
         // := <expressao> | <lista_arg>
@@ -410,6 +427,7 @@ class Analisador extends Tokenizador {
         }
     }
 
+    //Verificar
     private void condicao() {
         //<condicao> ::= <expressao> <relacao> <expressao>
         expressao();
@@ -510,13 +528,13 @@ class Analisador extends Tokenizador {
         //<fator> ::= ident | numero_int | numero_real | (<expressao>)
         if (tokenAtual.tipoToken == TipoToken.Identificador) {
             proxToken();
-        } else if (tokenAtual.tipoToken == TipoToken.numeroInt) {
-            if(this.TipoVar!=TipoToken.numeroInt)
-                Error("Tipos de variáveis não são compatíveis na linha "+this.tokenAtual.cod+" "+this.linha);
+        } else if (tokenAtual.tipoToken == TipoToken.integer) {
+            if(this.TipoVar!=TipoToken.integer)
+                Error("Tipos de variáveis não são compatíveis na linha "+this.tokenAtual.linha+"   "+this.tokenAtual.cod+ " Variavel ");
             proxToken();
-        } else if (tokenAtual.tipoToken == TipoToken.numeroReal) {
-            if(this.TipoVar!=TipoToken.numeroReal)
-                Error("Tipos de variáveis não são compatíveis: "+this.TipoVar+ (this.tokenAtual.linha+1));
+        } else if (tokenAtual.tipoToken == TipoToken.numeroReal || tokenAtual.tipoToken == TipoToken.real ) {
+            if(this.TipoVar!=TipoToken.numeroReal && this.TipoVar!=TipoToken.real)
+                Error("Tipos de variáveis não são compatíveis: "+this.tokenAtual.cod+ "Codigo e na Linha"+(this.tokenAtual.linha+1));
             proxToken();
         } else if (tokenAtual.tipoToken == TipoToken.abreParenteces) {
             proxToken();
@@ -532,6 +550,7 @@ class Analisador extends Tokenizador {
     }
 
     private void parametros() {
+        //Verificar
         if (tokenAtual.tipoToken == TipoToken.abreParenteces) {
             proxToken();
             lista_par();
@@ -546,6 +565,7 @@ class Analisador extends Tokenizador {
     }
 
     private void lista_par() {
+        //Verificar os valores atribuidos na função do procedure;
         LimparListVar();
         variaveis();
         if (tokenAtual.tipoToken == TipoToken.doispontos) {
@@ -573,10 +593,10 @@ class Analisador extends Tokenizador {
             this.TipoVar = TipoToken.integer;
             proxToken();
         } else if (tokenAtual.tipoToken == TipoToken.real) {
-            this.TipoVar = TipoToken.real;
+            this.TipoVar = TipoToken.numeroReal;
             proxToken();
         } else {
-            Error(TipoToken.numeroInt);
+            Error(TipoToken.integer);
         }
     }
 

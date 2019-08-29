@@ -4,7 +4,6 @@ public enum TipoToken {
     //token
     Identificador(""),
     Then("Then"),
-    numeroInt(""),
     numeroReal(""),
     PalavraReservadaIF("If"),
     OperadordeAtribuicao(":="),

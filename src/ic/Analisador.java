@@ -33,6 +33,8 @@ class Analisador extends Tokenizador {
     private List<Procedure> ListFuncao = new ArrayList<>();
     private Procedure newprocedure = new Procedure();
     private String bloco = "Global";
+    private List<String> CodMaqHipo = new ArrayList<>();
+
     void tabela() {
         System.out.println("Inicio da Analise Descendente:\n");
         program();
@@ -47,11 +49,27 @@ class Analisador extends Tokenizador {
         int tamanho = tabela.size();
         System.out.println("Tabela de Simbolos: ");
         System.out.println("------------------------");
-        System.out.println("Nome\t\t\t\tTipo\t\t\t\t\tTipo Token\t\t\t\tBloco");
+        System.out.println("Nome\t\t\t\tTipo\t\t\t\t\tTipo Token\t\t\t\tBloco\t\t\t\tEndereco");
         System.out.println("------------------------");
         for(int i=0; i<tamanho;i++){
-            System.out.println(tabela.get(i).token.cod + " \t\t\t\t"+tabela.get(i).tipoToken+"\t\t\t\t\t"+tabela.get(i).token.tipoToken+"\t\t\t\t"+tabela.get(i).bloco
+            System.out.println(tabela.get(i).token.cod + " \t\t\t\t"+tabela.get(i).tipoToken+"\t\t\t\t\t"+tabela.get(i).token.tipoToken+"\t\t\t\t"+tabela.get(i).bloco+"\t\t\t\t"+tabela.get(i).endereco
                     +"\n================================================================");
+        }
+        int tamFun = this.ListFuncao.size();
+        System.out.println("================================================================");
+        System.out.println("Funções declaradas no programa:");
+        for(int j=0;j<tamFun;j++){
+            System.out.println("Funcao: "+this.ListFuncao.get(j).nome);
+            int tamArg = this.ListFuncao.get(j).listArg.size();
+            System.out.println("Variaveis: ");
+            for(int k=0; k<tamArg;k++){
+                System.out.print(this.ListFuncao.get(j).listArg.get(k)+"-"+this.ListFuncao.get(j).listTipoToken.get(k)+" |");
+            }
+        }
+        System.out.println("========================= CÓDIGO DE MÁQUINA =============================");
+        int CodMaq = this.CodMaqHipo.size();
+        for(int i=0; i<CodMaq; i++){
+            System.out.println(this.CodMaqHipo.get(i));
         }
     }
 
@@ -64,6 +82,7 @@ class Analisador extends Tokenizador {
     private void program() {
         proxToken();
         if (tokenAtual.tipoToken == TipoToken.program) {
+            this.CodMaqHipo.add("INPP");
             proxToken();
             if (tokenAtual.tipoToken == TipoToken.Identificador) {
                 proxToken();
@@ -74,16 +93,6 @@ class Analisador extends Tokenizador {
         } else {
             Error(TipoToken.program);
         }
-    }
-
-    private void imprimirCodInter() {
-        Cod_inte.add("...");
-        int tam = 0;
-        do {
-            System.out.println((tam + 1) + " = " + Cod_inte.get(tam) + "\n");
-            tam++;
-        } while (tam < Cod_inte.size());
-        System.out.println("-------------------\n");
     }
 
     private void corpo() {
@@ -109,6 +118,7 @@ class Analisador extends Tokenizador {
         System.out.println("Linha"+ tokenAtual.linha);
         System.exit(1);
     }
+
     private void Error(String mensagem){
         System.out.println(mensagem);
         System.exit(1);
@@ -151,9 +161,10 @@ class Analisador extends Tokenizador {
         for (int i=0; i<tam;i++){
             Tabela valor;
             if(this.TipoVar ==TipoToken.integer)
-                valor = new Tabela(this.ListVar.get(i),TipoToken.integer, this.bloco );
+                valor = new Tabela(this.ListVar.get(i),TipoToken.integer, this.bloco , this.tabela.size());
             else
-                valor = new Tabela(this.ListVar.get(i),TipoToken.real, this.bloco );
+                valor = new Tabela(this.ListVar.get(i),TipoToken.real, this.bloco , this.tabela.size());
+            this.CodMaqHipo.add("ALME "+this.tabela.size());
             this.tabela.add(valor);
         }
         LimparListVar();
@@ -681,7 +692,6 @@ class Analisador extends Tokenizador {
         //Verificar
         if (tokenAtual.tipoToken == TipoToken.abreParenteces) {
             proxToken();
-            //Adicionar essas funções pro procedure atual que são os declarados
             lista_par();
             if (tokenAtual.tipoToken == TipoToken.fechaParenteses) {
                 proxToken();
@@ -690,9 +700,7 @@ class Analisador extends Tokenizador {
             }
         } else {
         }
-
     }
-
     private void lista_par() {
         //Verificar os valores atribuidos na função do procedure;
         LimparListVar();
@@ -746,36 +754,6 @@ class Analisador extends Tokenizador {
         }
     }
 
-    private void ErrorId(String id) {
-        System.out.println("Erro na Analise:");
-        System.out.println("A variavel " + id + " foi declarado mais de uma vez.");
-        System.out.println("O compilador não pode continuar");
-        error = true;
-        System.exit(0);
-    }
-
-    private boolean VerificarIdTabela(Token id) {
-        int i = 0;
-        int tam = tabela.size();
-        if (tabela.size() == 0)
-            return true;
-        do {
-            if (tabela.get(i).token.cod.equals(id.cod))
-                return false;
-            i++;
-            tam--;
-        } while (tam > 0);
-        return true;
-    }
-
-    private void LimparIdentificadores() {
-        int tamanho = Id.size();
-        do {
-            Id.remove(tamanho - 1);
-            tamanho--;
-        } while (tamanho > 0);
-    }
-
     private void variaveis() {
         int tam;
         if (tokenAtual.tipoToken == TipoToken.Identificador) {
@@ -819,61 +797,6 @@ class Analisador extends Tokenizador {
         }
     }
 
-    private boolean VerificarIdentificador() {
-        int tam = tabela.size() - 1;
-        do {
-            if (tokenAtual.cod.equals(tabela.get(tam).token.cod))
-                return true;
-            tam--;
-        } while (tam > -1);
-        return false;
-    }
-
-
-    private void gerarR_sem_iden(String cod_atual) {
-        String cod_int;
-        cod_int = "[ := " + cod_atual + " " + R.get(0) + " ]";
-        Cod_inte.add(cod_int);
-    }
-
-    private void gerarR_com_ident(String id) {
-        String cod_int = "[ := " + id + " " + Temp.peek() + " ]";
-        Cod_inte.add(cod_int);
-
-    }
-
-    private void limparTipoTokenListId() {
-        int tam = tipotokenListId.size() - 1;
-        do {
-            tipotokenListId.remove(tam);
-            tam--;
-        } while (tam > -1);
-    }
-
-    private String voltarTipoError() {
-        int tam = tipotokenListId.size() - 1;
-        String first = tipotokenListId.get(0).tipoToken.toString();
-        do {
-            if (!first.equals(tipotokenListId.get(tam).tipoToken.toString())) {
-                return tipotokenListId.get(tam).cod;
-            }
-            tam--;
-        } while (tam > -1);
-        return "";
-    }
-
-    private boolean VerificarosTipos() {
-        int tam = tipotokenListId.size() - 1;
-        String first = tipotokenListId.get(0).tipoToken.toString();
-        do {
-            if (!first.equals(tipotokenListId.get(tam).tipoToken.toString())) {
-                return false;
-            }
-            tam--;
-        } while (tam > -1);
-
-        return true;
-    }
 
     private TipoToken buscartipodevarTab(String id) {
         int tam = tabela.size() - 1;
@@ -885,18 +808,6 @@ class Analisador extends Tokenizador {
         return null;
     }
 
-
-    private void addtipotokenList() {
-        Token newtoken;
-        newtoken = new Token(tokenAtual.cod, buscartipodevarTab(tokenAtual.cod), this.linha);
-        tipotokenListId.add(newtoken);
-    }
-
-    private void ErroTipo(String id, String atual, String esperado) {
-        error = true;
-        System.out.println("Erro de Tipo na variavel '" + id + "'. Ela é do tipo " + esperado + " e esperava um " + atual + ".");
-        System.exit(1);
-    }
 }
 
 //Verificar

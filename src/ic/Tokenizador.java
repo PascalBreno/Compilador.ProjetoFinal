@@ -135,6 +135,10 @@ class Tokenizador extends JFrame {
                     peex.novoPeex();
                     posicaoAtual++;
                     break;
+                } else if (catual == '\t') {
+                    peex.novoPeex();
+                    posicaoAtual++;
+                    break;
                 } else if (catual == '(') {
                     AnalisarPalavra(peex);
                     AdicionarToken("(", TipoToken.abreParenteces);//Analiza a palavra lida até o simbolo de pular Linha
@@ -199,6 +203,7 @@ class Tokenizador extends JFrame {
     }
 
     private void AnalisarPalavra(Peex peex) {
+        peex.palavra.replace("\t", "");
         if (peex.palavra.equals("then")) {
             AdicionarToken(peex.palavra, TipoToken.Then);
         } else if (peex.palavra.equals("if")) {
@@ -219,7 +224,8 @@ class Tokenizador extends JFrame {
             AdicionarToken(peex.palavra, TipoToken.tokenReada);
         } else if (peex.palavra.equals("else")) {
             AdicionarToken(peex.palavra, TipoToken.tokenElse);
-        } else if (peex.palavra.equals(TipoToken.begin.toString())) {
+        }
+        else if (peex.palavra.equals(TipoToken.begin.toString())) {
             AdicionarToken(peex.palavra, TipoToken.begin);
         } else if (peex.palavra.equals(TipoToken.program.toString())) {
             AdicionarToken(peex.palavra, TipoToken.program);

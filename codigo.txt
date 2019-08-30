@@ -10,9 +10,9 @@ procedure um (a, g: real; d, c: integer)
   var h, i, j: real;
   var l: integer
 begin
-  h := 2.0 + a;
+  h := 2.0;
   a := g + 3.4 / h;
-  l := c - d * 2;
+  l := h - d * 2;
   if (c+d)>=5 then
     write(a)
   else
@@ -41,7 +41,6 @@ read(g); {inteiro}
 read(h); { inteiro}
 d := e/f; {real}
 dois(h;d;h);
-um(f;e;g;h)
-{real,real,inteiro,inteiro}
+um(f;e;g;h)         {real,real,inteiro,inteiro}
 {aqui termina o programa}
 end.

@@ -287,7 +287,6 @@ class Analisador extends Tokenizador {
             proxToken();
             argumentos();
             if(this.ValorProcedureAtribuido) {
-                System.out.println("Testar um valor aqui");
                 //Verificar as variaveis
                 verificarDeclracaonoProcedure();
             }
@@ -322,7 +321,6 @@ class Analisador extends Tokenizador {
 
     private void verificaVariavelProcedure(String cod, TipoToken tipoToken, String bloco) {
         //this.listProcedureDeclarado Verificar isso aqui e se está na tabela de simbolos os valores.
-        System.out.println("Verificando se "+ cod+ " está no tipo "+tipoToken);
         Boolean exist = false;
         int tamTab = this.tabela.size();
         for(int i=0; i<tamTab;i++){
@@ -438,13 +436,27 @@ class Analisador extends Tokenizador {
         }
         else if (tokenAtual.tipoToken == TipoToken.Identificador) {
             //Verificar se esse identificador é uma variavel ou um procedure;
-            checkProcedure();
+            checkVar();
             restoIdent();
         } else {
             Error(TipoToken.Error);
         }
     }
-private void TokenTipoTokeniador(){
+
+    private void checkVar() {
+        int tam = this.tabela.size();
+        Boolean exist = false;
+        for(int i=0;i<tam;i++){
+            if(this.tabela.get(i).token.cod.equals(tokenAtual.cod)  && (this.tabela.get(i).bloco.equals(this.bloco))) {
+                exist = true;
+                break;
+            }
+        }
+        if(!exist)
+            checkProcedure();
+    }
+
+    private void TokenTipoTokeniador(){
         //Aqui é pra verificar o tipo da variavel de identificação pra fazer a comparação entre as variaveis restantes
     Boolean exist = false;
     int tam =this.tabela.size();
@@ -660,6 +672,8 @@ private void TokenTipoTokeniador(){
                 this.NomeProceudore = tokenAtual.cod;
             }
         }
+        if(!this.ValorProcedureAtribuido)
+            Error("Procedure "+tokenAtual.cod+" não declarada");
 
     }
 
@@ -884,3 +898,5 @@ private void TokenTipoTokeniador(){
         System.exit(1);
     }
 }
+
+//Verificar
